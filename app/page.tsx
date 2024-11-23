@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useFileOperations } from '../hooks/useFileOperations';
 
-import FileTree from '../components/FileTree';
+import { FileTree } from '../components/FileTree';
 import FileEditor from '../components/FileEditor';
 import CreateForm from '../components/CreateForm';
 
@@ -22,8 +22,10 @@ export default function Home() {
   } = useFileOperations();
 
   useEffect(() => {
-    fetchFiles();
-  }, [fetchFiles]);
+    fetchFiles().catch(error => {
+      console.error('Failed to fetch files:', error);
+    });
+  }, []);
 
   return (
     <div className="container mx-auto p-4">

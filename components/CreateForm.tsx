@@ -1,4 +1,4 @@
-import { FormEvent, useState, useRef, useEffect } from 'react';
+import { FormEvent, useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusIcon, FolderPlusIcon } from 'lucide-react';
@@ -9,10 +9,11 @@ interface CreateFormProps {
   currentDirectory: string;
 }
 
-export default function CreateForm({ onCreateFile, currentDirectory }: CreateFormProps) {
+const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory }: CreateFormProps) {
   const [newName, setNewName] = useState('');
   const [prefixWidth, setPrefixWidth] = useState(0);
   const prefixRef = useRef<HTMLSpanElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (prefixRef.current) {
@@ -21,23 +22,32 @@ export default function CreateForm({ onCreateFile, currentDirectory }: CreateFor
     }
   }, [currentDirectory]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setNewName(e.target.value);
-  };
+  }, []);
 
-  const handleSubmit = (isDirectory: boolean) => {
+  const handleSubmit = useCallback((isDirectory: boolean) => {
     if (newName) {
       const fileName = isDirectory ? `${newName}/` : newName;
       const cleanDirectory = currentDirectory.endsWith('/') ? currentDirectory.slice(0, -1) : currentDirectory;
       const fullPath = cleanDirectory ? `${cleanDirectory}/${fileName}` : fileName;
       onCreateFile(fullPath);
       setNewName('');
+      inputRef.current?.focus();
     }
-  };
+  }, [newName, currentDirectory, onCreateFile]);
 
-  const handleFormSubmit = (e: FormEvent) => {
+  const handleFormSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
-  };
+    handleSubmit(false);
+  }, [handleSubmit]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit(e.shiftKey);
+    }
+  }, [handleSubmit]);
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-2">
@@ -56,10 +66,12 @@ export default function CreateForm({ onCreateFile, currentDirectory }: CreateFor
           </span>
         )}
         <Input
+          ref={inputRef}
           type="text"
-          placeholder="Enter name..."
+          placeholder="Enter name... (Shift+Enter for folder)"
           value={newName}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           className={cn('pr-[80px]', currentDirectory && 'pl-[var(--prefix-width)]')}
           style={{ '--prefix-width': `${prefixWidth + 10}px` } as React.CSSProperties}
         />
@@ -70,6 +82,7 @@ export default function CreateForm({ onCreateFile, currentDirectory }: CreateFor
             variant="ghost"
             className="rounded-none hover:bg-transparent"
             onClick={() => handleSubmit(false)}
+            title="Create File (Enter)"
           >
             <PlusIcon className="h-4 w-4" />
           </Button>
@@ -78,6 +91,7 @@ export default function CreateForm({ onCreateFile, currentDirectory }: CreateFor
             size="icon"
             className="rounded-l-none"
             onClick={() => handleSubmit(true)}
+            title="Create Folder (Shift+Enter)"
           >
             <FolderPlusIcon className="h-4 w-4" />
           </Button>
@@ -85,4 +99,6 @@ export default function CreateForm({ onCreateFile, currentDirectory }: CreateFor
       </div>
     </form>
   );
-}
+});
+
+export default CreateForm;

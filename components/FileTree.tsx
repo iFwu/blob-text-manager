@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { FileIcon, FolderIcon, FolderOpenIcon, TrashIcon } from 'lucide-react';
-import { BlobFile } from '../types';
-import { FileTreeView } from './FileTreeView';
+import { useState, useMemo, useCallback } from 'react';
+import { FileIcon, FolderIcon } from 'lucide-react';
+import TreeView from './ui/tree-view';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
-import { ItemToDelete, TreeDataItem } from '../types';
-import { Button } from '@/components/ui/button';
+import { BlobFile, ItemToDelete, TreeDataItem } from '../types';
+import { useTreeData } from '@/hooks/useTreeData';
+import { useTreeExpansion } from '@/hooks/useTreeExpansion';
 
 interface FileTreeProps {
   files: BlobFile[];
@@ -15,22 +15,6 @@ interface FileTreeProps {
   onFolderDelete: (folderPath: string) => void;
   isLoading: boolean;
   selectedFile: BlobFile | null;
-}
-
-function sortItems(items: TreeDataItem[]): TreeDataItem[] {
-  const folders = items.filter((item) => item.children);
-  const files = items.filter((item) => !item.children);
-
-  const sortByDate = (a: TreeDataItem, b: TreeDataItem) => {
-    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
-    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
-    return bTime - aTime;
-  };
-
-  folders.sort(sortByDate);
-  files.sort(sortByDate);
-
-  return [...folders, ...files];
 }
 
 export default function FileTree({
@@ -43,18 +27,19 @@ export default function FileTree({
 }: FileTreeProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
-  const handleDeleteClick = useCallback((file: BlobFile) => {
+  const handleFileDelete = (file: BlobFile) => {
     setItemToDelete({ type: 'file', item: file });
     setIsDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const handleFolderDeleteClick = useCallback((folderPath: string) => {
+  const handleFolderDelete = (folderPath: string) => {
     setItemToDelete({ type: 'folder', item: folderPath });
     setIsDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = () => {
     if (itemToDelete) {
       if (itemToDelete.type === 'file') {
         onFileDelete(itemToDelete.item as BlobFile);
@@ -64,119 +49,35 @@ export default function FileTree({
     }
     setIsDeleteDialogOpen(false);
     setItemToDelete(null);
-  }, [itemToDelete, onFileDelete, onFolderDelete]);
+  };
 
-  const buildTreeData = useCallback(
-    (files: BlobFile[]): TreeDataItem[] => {
-      const directories = new Map<string, TreeDataItem>();
-      const rootItems: TreeDataItem[] = [];
+  const treeData = useTreeData(files, onFileSelect, handleFileDelete, handleFolderDelete);
 
-      files.forEach((file) => {
-        if (!file.isDirectory) return;
-        const parts = file.pathname.split('/');
-        let currentPath = '';
-        let currentArray = rootItems;
+  const {
+    expandedItems,
+    isParentOfSelected,
+    expandToItem,
+    toggleExpand,
+  } = useTreeExpansion(selectedFile?.pathname);
 
-        parts.forEach((part, index) => {
-          if (part === '') return;
-          currentPath = currentPath ? `${currentPath}/${part}` : part;
+  const selectedItemId = useMemo(() => {
+    return selectedFile?.pathname;
+  }, [selectedFile]);
 
-          if (!directories.has(currentPath)) {
-            const dirItem: TreeDataItem = {
-              id: currentPath,
-              name: part,
-              icon: FolderIcon,
-              openIcon: FolderOpenIcon,
-              children: [],
-              uploadedAt: file.uploadedAt,
-              actions: (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFolderDeleteClick(currentPath);
-                  }}
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </Button>
-              ),
-            };
-            directories.set(currentPath, dirItem);
-            currentArray.push(dirItem);
-          }
-          currentArray = directories.get(currentPath)!.children!;
-        });
-      });
+  const handleItemClick = useCallback((item: TreeDataItem) => {
+    item.onClick?.();
+    if (item.children) {
+      expandToItem(item.id);
+    }
+  }, [expandToItem]);
 
-      files.forEach((file) => {
-        if (file.isDirectory) return;
-        const parts = file.pathname.split('/');
-        let currentPath = '';
-        let currentArray = rootItems;
-
-        parts.slice(0, -1).forEach((part) => {
-          if (part === '') return;
-          currentPath = currentPath ? `${currentPath}/${part}` : part;
-          currentArray = directories.get(currentPath)?.children || currentArray;
-        });
-
-        const fileItem: TreeDataItem = {
-          id: file.pathname,
-          name: parts[parts.length - 1],
-          icon: FileIcon,
-          uploadedAt: file.uploadedAt,
-          actions: (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteClick(file);
-              }}
-            >
-              <TrashIcon className="h-4 w-4" />
-            </Button>
-          ),
-          onClick: () => onFileSelect(file),
-        };
-        currentArray.push(fileItem);
-      });
-
-      const sortRecursively = (items: TreeDataItem[]) => {
-        const sortedItems = sortItems(items);
-        sortedItems.forEach((item) => {
-          if (item.children) {
-            item.children = sortRecursively(item.children);
-          }
-        });
-        return sortedItems;
-      };
-
-      return sortRecursively(rootItems);
-    },
-    [handleDeleteClick, handleFolderDeleteClick, onFileSelect]
-  );
-
-  const treeData = buildTreeData(files);
-
-  const handleSelectChange = useCallback(
-    (item: TreeDataItem | undefined) => {
-      if (!item) {
-        onFileSelect(null);
-        return;
-      }
-
-      // 在Vercel Blob存储中，文件夹是作为特殊的文件存储的（size为0且路径以/结尾）
-      // 所以不需要创建虚拟的文件夹对象，直接从files数组中查找即可
-      const normalizedId = item.id.replace(/\/+$/, '');
-      const selectedFile = files.find((file) => file.pathname.replace(/\/+$/, '') === normalizedId);
-      onFileSelect(selectedFile || null);
-    },
-    [files, onFileSelect]
-  );
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Rendering FileTree with:', {
+      selectedItemId,
+      expandedItems,
+      treeData,
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -184,10 +85,17 @@ export default function FileTree({
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
       ) : (
-        <FileTreeView
-          treeData={treeData}
-          selectedFile={selectedFile ? selectedFile.pathname : undefined}
-          onSelectChange={handleSelectChange}
+        <TreeView
+          data={treeData}
+          selectedItemId={selectedItemId}
+          expandedItems={expandedItems}
+          hoveredItemId={hoveredItemId}
+          defaultNodeIcon={FolderIcon}
+          defaultLeafIcon={FileIcon}
+          onItemClick={handleItemClick}
+          onItemHover={setHoveredItemId}
+          onToggleExpand={toggleExpand}
+          isParentOfSelected={isParentOfSelected}
         />
       )}
       <DeleteConfirmDialog
