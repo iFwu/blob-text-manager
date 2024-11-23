@@ -16,7 +16,7 @@ export function useFileOperations() {
     setIsFileTreeLoading(true);
     try {
       const blobList = await listBlobs();
-      setFiles(blobList.filter((file) => !pendingDeletions.current.has(file.name)));
+      setFiles(blobList.filter((file) => !pendingDeletions.current.has(file.pathname)));
     } catch (error) {
       console.error('Error fetching file list:', error);
     } finally {
@@ -31,7 +31,7 @@ export function useFileOperations() {
       return;
     }
     setFileContent('');
-    if (!file) return;
+    if (!file || !file.url) return;
 
     setIsFileContentLoading(true);
     try {
@@ -48,7 +48,7 @@ export function useFileOperations() {
   const handleFileSave = useCallback(
     async (content: string, fileName?: string) => {
       try {
-        const fileToSave = fileName || (selectedFile?.name ?? '');
+        const fileToSave = fileName || (selectedFile?.pathname ?? '');
         if (!fileToSave) {
           console.error('No file name provided for save operation');
           return;
@@ -57,9 +57,7 @@ export function useFileOperations() {
         const isFolder = fileToSave.endsWith('/');
 
         const newFile: BlobFile = {
-          name: fileToSave,
-          url: fileToSave, // 使用文件名作为临时 URL
-          downloadUrl: '',
+          pathname: fileToSave,
           size: isFolder ? 0 : content.length,
           uploadedAt: new Date().toISOString(),
           isDirectory: isFolder,
@@ -81,10 +79,14 @@ export function useFileOperations() {
         };
 
         if (fileName) {
-          setFiles((prevFiles) => prevFiles.map((f) => (f.name === fileToSave ? updatedFile : f)));
+          setFiles((prevFiles) =>
+            prevFiles.map((f) => (f.pathname === fileToSave ? updatedFile : f))
+          );
           setSelectedFile(updatedFile);
         } else {
-          setFiles((prevFiles) => prevFiles.map((f) => (f.name === fileToSave ? updatedFile : f)));
+          setFiles((prevFiles) =>
+            prevFiles.map((f) => (f.pathname === fileToSave ? updatedFile : f))
+          );
           setSelectedFile(updatedFile);
         }
 
@@ -100,16 +102,12 @@ export function useFileOperations() {
 
   const handleFileDelete = useCallback(
     async (file: BlobFile) => {
-      if (pendingDeletions.current.has(file.name)) {
-        return;
-      }
+      if (!file.url) return;
 
-      pendingDeletions.current.add(file.name);
+      pendingDeletions.current.add(file.pathname);
+      setFiles((prevFiles) => prevFiles.filter((f) => f.pathname !== file.pathname));
 
-      setFiles((prevFiles) =>
-        prevFiles.filter((f) => f.name !== file.name && !pendingDeletions.current.has(f.name))
-      );
-      if (selectedFile && selectedFile.name === file.name) {
+      if (selectedFile?.pathname === file.pathname) {
         setSelectedFile(null);
         setFileContent('');
       }
@@ -118,23 +116,22 @@ export function useFileOperations() {
         await deleteBlob(file.url);
       } catch (error) {
         console.error('Error deleting file:', error);
-        setFiles((prevFiles) => [...prevFiles, file]);
-      } finally {
-        pendingDeletions.current.delete(file.name);
+        pendingDeletions.current.delete(file.pathname);
+        await fetchFiles(); // Refresh the file list to restore the file if deletion failed
       }
     },
-    [selectedFile]
+    [selectedFile, fetchFiles]
   );
 
   const handleFolderDelete = useCallback(
     async (folderPath: string) => {
-      const filesToDelete = files.filter((file) => file.name.startsWith(folderPath));
+      const filesToDelete = files.filter((file) => file.pathname.startsWith(folderPath));
 
       for (const file of filesToDelete) {
         await handleFileDelete(file);
       }
 
-      setFiles((prevFiles) => prevFiles.filter((file) => !file.name.startsWith(folderPath)));
+      setFiles((prevFiles) => prevFiles.filter((file) => !file.pathname.startsWith(folderPath)));
     },
     [files, handleFileDelete]
   );

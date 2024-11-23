@@ -41,10 +41,10 @@ export function CreateFileForm({ onCreateFile, currentDirectory }: CreateFileFor
           <span
             ref={prefixRef}
             className={cn(
-              "inline-flex items-center absolute left-0 top-0 bottom-0",
-              "text-sm text-muted-foreground bg-muted",
-              "border border-r-0 border-input rounded-l-md",
-              "truncate px-3 font-mono"
+              'inline-flex items-center absolute left-0 top-0 bottom-0',
+              'text-sm text-muted-foreground bg-muted',
+              'border border-r-0 border-input rounded-l-md',
+              'truncate px-3 font-mono'
             )}
           >
             {currentDirectory}/

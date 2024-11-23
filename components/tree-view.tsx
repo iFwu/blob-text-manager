@@ -4,20 +4,10 @@ import React, { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-
-export interface TreeDataItem {
-  id: string;
-  name: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  selectedIcon?: React.ComponentType<{ className?: string }>;
-  openIcon?: React.ComponentType<{ className?: string }>;
-  children?: TreeDataItem[];
-  actions?: React.ReactNode;
-  onClick?: () => void;
-}
+import { TreeDataItem } from '../types';
 
 interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: TreeDataItem[] | TreeDataItem;
+  data: TreeDataItem[];
   initialSelectedItemId?: string | undefined;
   selectedItemId?: string | undefined;
   onSelectChange?: (item: TreeDataItem) => void;
@@ -79,11 +69,12 @@ export function TreeView({
     if (selectedItemId) {
       const selectedParts = selectedItemId.split('/');
       const currentParts = itemId.split('/');
-      const isParentOfSelected = 
-        selectedParts.length > currentParts.length && 
-        selectedParts.slice(0, currentParts.length).join('/') === itemId;
+      const isParentOfSelected =
+        itemId === selectedItemId ||
+        (selectedParts.length > currentParts.length &&
+          selectedParts.slice(0, currentParts.length).join('/') === itemId);
 
-      // 如果是父级目录，不允许折叠
+      // 如果是父级目录或选中的项目，不允许折叠
       if (isParentOfSelected) {
         return;
       }
@@ -117,16 +108,17 @@ export function TreeView({
     const IconComponent = item.icon || (hasChildren ? defaultNodeIcon : defaultLeafIcon);
 
     // 检查是否是当前选中文件的父级目录
-    const isParentOfSelected = selectedItemId ? (
-      (() => {
-        const selectedParts = selectedItemId.split('/');
-        const currentParts = item.id.split('/');
-        return (
-          selectedParts.length > currentParts.length && 
-          selectedParts.slice(0, currentParts.length).join('/') === item.id
-        );
-      })()
-    ) : false;
+    const isParentOfSelected = selectedItemId
+      ? (() => {
+          const selectedParts = selectedItemId.split('/');
+          const currentParts = item.id.split('/');
+          return (
+            item.id === selectedItemId ||
+            (selectedParts.length > currentParts.length &&
+              selectedParts.slice(0, currentParts.length).join('/') === item.id)
+          );
+        })()
+      : false;
 
     return (
       <div key={item.id} className="relative">
@@ -149,7 +141,9 @@ export function TreeView({
                 isParentOfSelected && 'opacity-30 cursor-not-allowed hover:bg-transparent'
               )}
               onClick={(e) => toggleExpand(item.id, e)}
-              title={isParentOfSelected ? "Cannot collapse while containing selected item" : undefined}
+              title={
+                isParentOfSelected ? 'Cannot collapse while containing selected item' : undefined
+              }
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />

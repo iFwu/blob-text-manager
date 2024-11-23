@@ -5,14 +5,14 @@ import { BlobFile } from '../types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 
-function handleEmptyContent(content: string | File | null, name: string): string | File {
+function handleEmptyContent(content: string | File | null, pathname: string): string | File {
   if (typeof content === 'string') {
     return content.trim() === '' ? ZERO_WIDTH_SPACE : content.replace(/^\u200B/, '');
   } else if (content instanceof File && content.size === 0) {
-    return new File([ZERO_WIDTH_SPACE], name, { type: content.type });
+    return new File([ZERO_WIDTH_SPACE], pathname, { type: content.type });
   }
   if (!content) {
-    return new File([ZERO_WIDTH_SPACE], name, { type: 'text/plain' });
+    return new File([ZERO_WIDTH_SPACE], pathname, { type: 'text/plain' });
   }
   return content;
 }
@@ -31,7 +31,7 @@ export async function listBlobs(): Promise<BlobFile[]> {
   });
 
   const processedBlobs = Array.from(fileMap.values()).map((blob) => ({
-    name: blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1'),
+    pathname: blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1'),
     url: blob.url,
     downloadUrl: blob.downloadUrl,
     size: blob.size,
@@ -39,6 +39,7 @@ export async function listBlobs(): Promise<BlobFile[]> {
     isDirectory: blob.pathname.endsWith('/') && blob.size === 0,
   }));
 
+  console.log('processedBlobs', processedBlobs);
   return processedBlobs;
 }
 
@@ -51,10 +52,10 @@ export async function getBlob(url: string): Promise<string> {
   return content;
 }
 
-export async function putBlob(name: string, content: string | File | null) {
+export async function putBlob(pathname: string, content: string | File | null) {
   const { blobs } = await list();
   const existingFiles = blobs.filter(
-    (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === name
+    (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
 
   // 如果文件已存在，删除所有旧版本
@@ -62,14 +63,14 @@ export async function putBlob(name: string, content: string | File | null) {
     await del(oldVersion.url);
   }
 
-  const isFolder = name.endsWith('/');
+  const isFolder = pathname.endsWith('/');
   if (isFolder) {
-    content = new File([], name, { type: 'application/x-empty' });
+    content = new File([], pathname, { type: 'application/x-empty' });
   } else {
-    content = handleEmptyContent(content, name);
+    content = handleEmptyContent(content, pathname);
   }
-  
-  const result = await put(name, content, {
+
+  const result = await put(pathname, content, {
     access: 'public',
     addRandomSuffix: !isFolder,
   });

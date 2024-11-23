@@ -74,7 +74,7 @@ export default function FileTree({
       // 首先添加所有目录
       files.forEach((file) => {
         if (!file.isDirectory) return;
-        const parts = file.name.split('/');
+        const parts = file.pathname.split('/');
         let currentPath = '';
         let currentArray = rootItems;
 
@@ -114,7 +114,7 @@ export default function FileTree({
       // 然后添加所有文件
       files.forEach((file) => {
         if (file.isDirectory) return;
-        const parts = file.name.split('/');
+        const parts = file.pathname.split('/');
         let currentPath = '';
         let currentArray = rootItems;
 
@@ -125,7 +125,7 @@ export default function FileTree({
         });
 
         const fileItem: TreeDataItem = {
-          id: file.name,
+          id: file.pathname,
           name: parts[parts.length - 1],
           icon: FileIcon,
           uploadedAt: file.uploadedAt,
@@ -166,19 +166,16 @@ export default function FileTree({
 
   const handleSelectChange = useCallback(
     (item: TreeDataItem | undefined) => {
-      const file = files.find((f) => f.url === item?.id);
-
+      const file = files.find((f) => f.pathname === item?.id);
       if (file) {
         onFileSelect(file);
       } else if (item?.children) {
         // Create a virtual folder object
         const virtualFolder: BlobFile = {
-          url: item.id,
-          name: item.name,
+          pathname: item.id,
           size: 0,
           uploadedAt: new Date().toISOString(),
           isDirectory: true,
-          downloadUrl: '',
         };
         onFileSelect(virtualFolder);
       } else {
@@ -196,7 +193,7 @@ export default function FileTree({
       ) : (
         <FileTreeView
           treeData={treeData}
-          selectedFile={selectedFile ? selectedFile.name : undefined}
+          selectedFile={selectedFile ? selectedFile.pathname : undefined}
           onSelectChange={handleSelectChange}
         />
       )}

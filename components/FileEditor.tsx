@@ -30,7 +30,7 @@ export default function FileEditor({ file, content, onSave, isLoading = false }:
   if (isLoading) {
     return (
       <div>
-        <h2 className="text-lg font-semibold mb-2">Editing: {file.name}</h2>
+        <h2 className="text-lg font-semibold mb-2">Editing: {file.pathname}</h2>
         <div className="w-full h-96 border rounded p-2 mb-2 flex items-center justify-center bg-muted/50">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
@@ -40,7 +40,7 @@ export default function FileEditor({ file, content, onSave, isLoading = false }:
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-2">Editing: {file.name}</h2>
+      <h2 className="text-lg font-semibold mb-2">Editing: {file.pathname}</h2>
       <textarea
         className="w-full h-96 border rounded p-2 mb-2 font-mono"
         value={editedContent}

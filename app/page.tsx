@@ -45,8 +45,8 @@ export default function Home() {
               currentDirectory={
                 selectedFile
                   ? selectedFile.isDirectory
-                    ? selectedFile.name
-                    : selectedFile.name.split('/').slice(0, -1).join('/')
+                    ? selectedFile.pathname
+                    : selectedFile.pathname.split('/').slice(0, -1).join('/')
                   : ''
               }
             />
