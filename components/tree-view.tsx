@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   defaultLeafIcon?: React.ComponentType<{ className?: string }>;
 }
 
-export function TreeView({
+export const TreeView = ({
   data,
   initialSelectedItemId,
   selectedItemId: controlledSelectedItemId,
@@ -26,7 +26,7 @@ export function TreeView({
   defaultLeafIcon,
   className,
   ...props
-}: TreeViewProps) {
+}: TreeViewProps) => {
   const [uncontrolledSelectedItemId, setUncontrolledSelectedItemId] = useState<string | undefined>(
     initialSelectedItemId
   );
@@ -34,73 +34,47 @@ export function TreeView({
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   
   const expandedItemsRef = useRef<Set<string>>(expandedItems);
-  
-  useEffect(() => {
-    expandedItemsRef.current = expandedItems;
-  }, [expandedItems]);
+  expandedItemsRef.current = expandedItems;
 
   const selectedItemId = controlledSelectedItemId ?? uncontrolledSelectedItemId;
 
-  useEffect(() => {
-    if (selectedItemId) {
-      setExpandedItems(prev => {
-        const newSet = new Set(prev);
-        const parts = selectedItemId.split('/');
+  const normalizePath = (path: string) => path.replace(/\/+$/, '');
+
+  const updateExpandedItems = useCallback((itemId: string, shouldExpand: boolean = true) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      
+      if (shouldExpand) {
+        // 添加所有父文件夹到展开集合
+        const parts = itemId.split('/');
         let currentPath = '';
-        
         for (let i = 0; i < parts.length - 1; i++) {
           if (parts[i] === '') continue;
           currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
           newSet.add(currentPath);
         }
         
-        return newSet;
-      });
-    }
-  }, [selectedItemId]);
-
-  const normalizePath = (path: string) => path.replace(/\/+$/, '');
-
-  const handleSelectChange = (item: TreeDataItem) => {
-    setUncontrolledSelectedItemId(item.id);
-    onSelectChange?.(item);
-
-    setExpandedItems((prev) => {
-      const newSet = new Set(prev);
+        // 如果是文件夹，也将其添加到展开集合
+        if (itemId.endsWith('/')) {
+          newSet.add(itemId);
+        }
+      } else {
+        newSet.delete(itemId);
+      }
       
-      if (item.children) {
-        newSet.add(item.id);
-      }
-
-      const parts = item.id.split('/');
-      let currentPath = '';
-      for (let i = 0; i < parts.length - 1; i++) {
-        if (parts[i] === '') continue;
-        currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
-        newSet.add(currentPath);
-      }
-
       return newSet;
     });
-  };
+  }, []);
 
-  const toggleExpand = (itemId: string, e?: React.MouseEvent) => {
+  const handleSelectChange = useCallback((item: TreeDataItem) => {
+    setUncontrolledSelectedItemId(item.id);
+    onSelectChange?.(item);
+    updateExpandedItems(item.id);
+  }, [onSelectChange, updateExpandedItems]);
+
+  const toggleExpand = useCallback((itemId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-
-    if (selectedItemId) {
-      const selectedParts = normalizePath(selectedItemId).split('/');
-      const currentParts = normalizePath(itemId).split('/');
-      const isParentOfSelected =
-        normalizePath(itemId) === normalizePath(selectedItemId) ||
-        (selectedParts.length > currentParts.length &&
-          selectedParts.slice(0, currentParts.length).join('/') === normalizePath(itemId));
-
-      if (isParentOfSelected) {
-        return;
-      }
-    }
-
-    setExpandedItems((prev) => {
+    setExpandedItems(prev => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
@@ -109,7 +83,14 @@ export function TreeView({
       }
       return newSet;
     });
-  };
+  }, []);
+
+  // 当选中项改变时，确保其父文件夹保持展开
+  useEffect(() => {
+    if (selectedItemId) {
+      updateExpandedItems(selectedItemId);
+    }
+  }, [selectedItemId, updateExpandedItems]);
 
   const renderTreeItem = (item: TreeDataItem, level: number = 0) => {
     const shouldKeepExpanded = (itemId: string): boolean => {
@@ -195,6 +176,14 @@ export function TreeView({
 
   const handleItemClick = (item: TreeDataItem) => {
     handleSelectChange(item);
+    // 如果点击的是文件夹，自动展开它
+    if (item.children && item.children.length > 0) {
+      setExpandedItems(prev => {
+        const newSet = new Set(prev);
+        newSet.add(item.id);
+        return newSet;
+      });
+    }
     item.onClick?.();
   };
 
