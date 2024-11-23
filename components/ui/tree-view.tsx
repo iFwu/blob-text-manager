@@ -80,44 +80,73 @@ export function TreeView({
     }
   }, [selectedItemId, updateExpandedItems]);
 
-  const renderTreeItem = (item: TreeDataItem, level: number = 0) => {
+  const renderTreeItem = (
+    item: TreeDataItem, 
+    level: number = 0, 
+    isLastItem: boolean = false,
+    parentIsLast: boolean[] = []
+  ) => {
     const isExpanded = expandAll || expandedItemsRef.current.has(item.id);
     const isDirectory = item.children !== undefined;
     const IconComponent = item.icon || (isDirectory ? defaultNodeIcon : defaultLeafIcon);
+    const hasChildren = item.children && item.children.length > 0;
 
     return (
-      <div key={item.id} className="relative">
+      <div key={item.id} className="relative group">
+        {/* Indent guides */}
+        {level > 0 && (
+          <div className="absolute left-0 top-0 bottom-0">
+            {Array.from({ length: level }).map((_, i) => {
+              const isParentLast = parentIsLast[i];
+              // Don't render the line for last items of last parents
+              if (isParentLast) return null;
+              
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "absolute w-px bg-border",
+                    "left-[12px]"
+                  )}
+                  style={{
+                    left: `${(i * 16) + 16}px`,
+                    top: 0,
+                    bottom: 0,
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+
         <div
           className={cn(
-            'flex items-center py-1 px-2 cursor-pointer hover:bg-accent/50 rounded-md',
-            'relative',
-            selectedItemId === item.id && 'bg-accent text-accent-foreground',
-            level > 0 && 'ml-6'
+            'flex items-center py-1 px-2 cursor-pointer hover:bg-accent/50 rounded-md relative',
+            selectedItemId === item.id && 'bg-accent text-accent-foreground'
           )}
           style={{
-            backgroundImage: level > 0 ? 'linear-gradient(to right, rgb(203 213 225 / 0.5) 1px, transparent 1px)' : 'none',
-            backgroundPosition: '0 50%',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '1px 100%'
+            marginLeft: level > 0 ? `${level * 16}px` : undefined,
           }}
           onClick={() => handleItemClick(item)}
           onMouseEnter={() => setHoveredItemId(item.id)}
           onMouseLeave={() => setHoveredItemId(null)}
         >
-          {isDirectory && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-4 w-4 p-0 mr-1"
-              onClick={(e) => toggleExpand(item.id, e)}
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
-            </Button>
-          )}
+          <div className="w-4 mr-1 flex-shrink-0">
+            {isDirectory && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-4 w-4 p-0"
+                onClick={(e) => toggleExpand(item.id, e)}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-3 w-3" />
+                ) : (
+                  <ChevronRight className="h-3 w-3" />
+                )}
+              </Button>
+            )}
+          </div>
           {IconComponent && (
             <IconComponent
               className={cn(
@@ -133,8 +162,15 @@ export function TreeView({
           </div>
         </div>
         {isDirectory && isExpanded && (
-          <div className="ml-2 relative">
-            {item.children?.map((child) => renderTreeItem(child, level + 1)) || null}
+          <div>
+            {item.children?.map((child, index) => 
+              renderTreeItem(
+                child,
+                level + 1,
+                index === (item.children?.length || 0) - 1,
+                [...parentIsLast, isLastItem]
+              )
+            )}
           </div>
         )}
       </div>
@@ -142,20 +178,18 @@ export function TreeView({
   };
 
   const handleItemClick = (item: TreeDataItem) => {
-    // 如果是文件夹，只处理展开/折叠
     if (item.children && item.children.length > 0) {
       toggleExpand(item.id);
       return;
     }
     
-    // 如果是文件，处理选中
     handleSelectChange(item);
     item.onClick?.();
   };
 
   return (
     <div className={cn('space-y-1', className)} {...props}>
-      {data.map((item) => renderTreeItem(item))}
+      {data.map((item, index) => renderTreeItem(item, 0, index === data.length - 1, []))}
     </div>
   );
 }
