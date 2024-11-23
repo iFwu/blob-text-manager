@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { FileIcon, FolderIcon, FolderOpenIcon, TrashIcon } from 'lucide-react';
 import { TreeView } from './ui/tree-view';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ interface FileExplorerProps {
   onFileSelect: (file: BlobFile | null) => void;
   onFileDelete: (file: BlobFile) => void;
   onFolderDelete: (folderPath: string) => void;
+  onAddDirectory: (directoryPath: string) => void;
   isLoading: boolean;
   selectedFile: BlobFile | null;
 }
@@ -22,11 +23,13 @@ export default function FileExplorer({
   onFileSelect,
   onFileDelete,
   onFolderDelete,
+  onAddDirectory,
   isLoading,
   selectedFile,
 }: FileExplorerProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
+  const [shouldClearSelection, setShouldClearSelection] = useState(false);
 
   const handleDeleteClick = useCallback((file: BlobFile) => {
     setItemToDelete({ type: 'file', item: file });
@@ -54,7 +57,14 @@ export default function FileExplorer({
     files,
     handleDeleteClick,
     handleFolderDeleteClick,
-    onFileSelect,
+    onFileSelect: (file) => {
+      onFileSelect(file);
+      setShouldClearSelection(false);
+    },
+    onAddDirectory: (directoryPath) => {
+      onAddDirectory(directoryPath);
+      setShouldClearSelection(true);
+    },
   });
 
   const handleSelectChange = useCallback(
@@ -64,21 +74,7 @@ export default function FileExplorer({
         return;
       }
 
-      // 如果是文件夹，创建一个虚拟的 BlobFile 对象
       const normalizedId = item.id.replace(/\/+$/, '');
-      const isDirectory = item.children !== undefined;
-      
-      if (isDirectory) {
-        const virtualFolder: BlobFile = {
-          pathname: `${normalizedId}/`,
-          size: 0,
-          uploadedAt: item.uploadedAt || new Date().toISOString(),
-          isDirectory: true
-        };
-        onFileSelect(virtualFolder);
-        return;
-      }
-
       const selectedFile = files.find((file) => file.pathname.replace(/\/+$/, '') === normalizedId);
       onFileSelect(selectedFile || null);
     },
@@ -93,7 +89,7 @@ export default function FileExplorer({
       ) : (
         <TreeView
           data={treeData}
-          selectedItemId={selectedFile ? selectedFile.pathname : undefined}
+          selectedItemId={shouldClearSelection ? null : selectedFile?.pathname ?? null}
           onSelectChange={handleSelectChange}
           defaultNodeIcon={FolderIcon}
           defaultLeafIcon={FileIcon}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useFileOperations } from '../hooks/useFileOperations';
 import Split from 'react-split';
 
@@ -21,6 +21,13 @@ export default function Home() {
     handleFileDelete,
     handleFolderDelete,
   } = useFileOperations();
+
+  const [initialPath, setInitialPath] = useState<string>();
+
+  const handleAddDirectory = useCallback((directoryPath: string) => {
+    handleFileSelect(null);
+    setInitialPath(directoryPath);
+  }, [handleFileSelect]);
 
   useEffect(() => {
     fetchFiles();
@@ -43,6 +50,7 @@ export default function Home() {
               onFileSelect={handleFileSelect}
               onFileDelete={handleFileDelete}
               onFolderDelete={handleFolderDelete}
+              onAddDirectory={handleAddDirectory}
               isLoading={isFileTreeLoading}
               selectedFile={selectedFile}
             />
@@ -50,7 +58,10 @@ export default function Home() {
           <div className="h-full overflow-auto pl-6 pt-4">
             <div className="space-y-4">
               <CreateForm
-                onCreateFile={(fileName) => handleFileSave('', fileName)}
+                onCreateFile={(fileName) => {
+                  setInitialPath(undefined);
+                  return handleFileSave('', fileName);
+                }}
                 currentDirectory={
                   selectedFile
                     ? selectedFile.isDirectory
@@ -58,6 +69,7 @@ export default function Home() {
                       : selectedFile.pathname.split('/').slice(0, -1).join('/')
                     : ''
                 }
+                initialPath={initialPath}
               />
               {!selectedFile?.isDirectory && (
                 <FileEditor

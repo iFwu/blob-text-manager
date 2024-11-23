@@ -7,20 +7,27 @@ import { cn } from '@/lib/utils';
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
   currentDirectory: string;
+  initialPath?: string;
 }
 
-const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory }: CreateFormProps) {
+const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, initialPath }: CreateFormProps) {
   const [newName, setNewName] = useState('');
   const [prefixWidth, setPrefixWidth] = useState(0);
   const prefixRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const effectiveDirectory = initialPath || currentDirectory;
 
   useEffect(() => {
     if (prefixRef.current) {
       const width = prefixRef.current.getBoundingClientRect().width;
       setPrefixWidth(width);
     }
-  }, [currentDirectory]);
+    if (initialPath) {
+      setNewName(initialPath);
+      inputRef.current?.focus();
+    }
+  }, [effectiveDirectory, initialPath]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setNewName(e.target.value);
@@ -29,13 +36,13 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory }: 
   const handleSubmit = useCallback((isDirectory: boolean) => {
     if (newName) {
       const fileName = isDirectory ? `${newName}/` : newName;
-      const cleanDirectory = currentDirectory.endsWith('/') ? currentDirectory.slice(0, -1) : currentDirectory;
+      const cleanDirectory = effectiveDirectory.endsWith('/') ? effectiveDirectory.slice(0, -1) : effectiveDirectory;
       const fullPath = cleanDirectory ? `${cleanDirectory}/${fileName}` : fileName;
       onCreateFile(fullPath);
     }
     setNewName('');
     inputRef.current?.focus();
-  }, [newName, currentDirectory, onCreateFile]);
+  }, [newName, effectiveDirectory, onCreateFile]);
 
   const handleFormSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
@@ -52,7 +59,7 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory }: 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-2">
       <div className="flex relative">
-        {currentDirectory && (
+        {effectiveDirectory && (
           <span
             ref={prefixRef}
             className={cn(
@@ -62,7 +69,7 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory }: 
               'truncate px-3 font-mono'
             )}
           >
-            {currentDirectory.replace(/\/+$/, '')}/
+            {effectiveDirectory.replace(/\/+$/, '')}/
           </span>
         )}
         <Input
@@ -72,7 +79,7 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory }: 
           value={newName}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          className={cn('pr-[80px]', currentDirectory && 'pl-[var(--prefix-width)]')}
+          className={cn('pr-[80px]', effectiveDirectory && 'pl-[var(--prefix-width)]')}
           style={{ '--prefix-width': `${prefixWidth + 10}px` } as React.CSSProperties}
         />
         <div className="absolute right-0 top-0 bottom-0 flex">

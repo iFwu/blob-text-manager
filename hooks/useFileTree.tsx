@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { TrashIcon, FolderIcon, FolderOpenIcon } from 'lucide-react';
+import { TrashIcon, FolderIcon, FolderOpenIcon, PlusIcon } from 'lucide-react';
 import { BlobFile, TreeDataItem } from '@/types';
 
 interface UseFileTreeProps {
@@ -8,6 +8,7 @@ interface UseFileTreeProps {
   handleDeleteClick: (file: BlobFile) => void;
   handleFolderDeleteClick: (folderPath: string) => void;
   onFileSelect: (file: BlobFile | null) => void;
+  onAddDirectory: (directoryPath: string) => void;
 }
 
 function sortItems(items: TreeDataItem[]): TreeDataItem[] {
@@ -31,6 +32,7 @@ export function useFileTree({
   handleDeleteClick,
   handleFolderDeleteClick,
   onFileSelect,
+  onAddDirectory,
 }: UseFileTreeProps) {
   const buildTreeData = useCallback(
     (files: BlobFile[]): TreeDataItem[] => {
@@ -43,7 +45,7 @@ export function useFileTree({
         let currentPath = '';
         let currentArray = rootItems;
 
-        parts.forEach((part, index) => {
+        parts.forEach((part) => {
           if (part === '') return;
           currentPath = currentPath ? `${currentPath}/${part}` : part;
 
@@ -56,17 +58,31 @@ export function useFileTree({
               children: [],
               uploadedAt: file.uploadedAt,
               actions: (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFolderDeleteClick(currentPath);
-                  }}
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </Button>
+                <div className="flex space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddDirectory(currentPath);
+                      onFileSelect(null);
+                    }}
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFolderDeleteClick(currentPath);
+                    }}
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </Button>
+                </div>
               ),
             };
             directories.set(currentPath, dirItem);
@@ -122,7 +138,7 @@ export function useFileTree({
 
       return sortRecursively(rootItems);
     },
-    [handleDeleteClick, handleFolderDeleteClick, onFileSelect]
+    [handleDeleteClick, handleFolderDeleteClick, onFileSelect, onAddDirectory]
   );
 
   const treeData = buildTreeData(files);

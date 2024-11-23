@@ -8,9 +8,9 @@ import { TreeDataItem } from '@/types';
 
 interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   data: TreeDataItem[];
-  initialSelectedItemId?: string | undefined;
-  selectedItemId?: string | undefined;
-  onSelectChange?: (item: TreeDataItem) => void;
+  initialSelectedItemId?: string | null;
+  selectedItemId?: string | null;
+  onSelectChange?: (item: TreeDataItem | undefined) => void;
   expandAll?: boolean;
   defaultNodeIcon?: React.ComponentType<{ className?: string }>;
   defaultLeafIcon?: React.ComponentType<{ className?: string }>;
@@ -27,14 +27,20 @@ export function TreeView({
   className,
   ...props
 }: TreeViewProps) {
-  const [uncontrolledSelectedItemId, setUncontrolledSelectedItemId] = useState<string | undefined>(
-    initialSelectedItemId
+  const [uncontrolledSelectedItemId, setUncontrolledSelectedItemId] = useState<string | null>(
+    initialSelectedItemId ?? null
   );
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
   const expandedItemsRef = useRef<Set<string>>(expandedItems);
   expandedItemsRef.current = expandedItems;
+
+  useEffect(() => {
+    if (controlledSelectedItemId === null) {
+      setUncontrolledSelectedItemId(null);
+    }
+  }, [controlledSelectedItemId]);
 
   const selectedItemId = controlledSelectedItemId ?? uncontrolledSelectedItemId;
 
@@ -52,6 +58,12 @@ export function TreeView({
     });
   }, []);
 
+  useEffect(() => {
+    if (selectedItemId) {
+      updateExpandedItems(selectedItemId);
+    }
+  }, [selectedItemId, updateExpandedItems]);
+
   const handleSelectChange = useCallback(
     (item: TreeDataItem) => {
       setUncontrolledSelectedItemId(item.id);
@@ -61,24 +73,15 @@ export function TreeView({
     [onSelectChange, updateExpandedItems]
   );
 
-  const toggleExpand = useCallback((itemId: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setExpandedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (selectedItemId) {
-      updateExpandedItems(selectedItemId);
+  const handleItemClick = (item: TreeDataItem) => {
+    if (item.children && item.children.length > 0) {
+      toggleExpand(item.id);
+      return;
     }
-  }, [selectedItemId, updateExpandedItems]);
+    
+    handleSelectChange(item);
+    item.onClick?.();
+  };
 
   const renderTreeItem = (
     item: TreeDataItem, 
@@ -177,15 +180,18 @@ export function TreeView({
     );
   };
 
-  const handleItemClick = (item: TreeDataItem) => {
-    if (item.children && item.children.length > 0) {
-      toggleExpand(item.id);
-      return;
-    }
-    
-    handleSelectChange(item);
-    item.onClick?.();
-  };
+  const toggleExpand = useCallback((itemId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  }, []);
 
   return (
     <div className={cn('space-y-1', className)} {...props}>
