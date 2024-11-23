@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,37 +8,39 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from '@/components/ui/alert-dialog';
 
 interface DeleteConfirmDialogProps {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-  itemType: 'file' | 'folder' | null
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  itemType: 'file' | 'folder' | null;
 }
 
-export function DeleteConfirmDialog({ isOpen, onOpenChange, onConfirm, itemType }: DeleteConfirmDialogProps) {
+export function DeleteConfirmDialog({
+  isOpen,
+  onOpenChange,
+  onConfirm,
+  itemType,
+}: DeleteConfirmDialogProps) {
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
-      onConfirm()
-      onOpenChange(false)
+      onConfirm();
+      onOpenChange(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown)
+      document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen, onConfirm])
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onConfirm]);
 
   return (
-    <AlertDialog 
-      open={isOpen} 
-      onOpenChange={onOpenChange}
-    >
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -49,12 +51,9 @@ export function DeleteConfirmDialog({ isOpen, onOpenChange, onConfirm, itemType 
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            Delete
-          </AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm}>Delete</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
-

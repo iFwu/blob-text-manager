@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import FileTree from '../components/FileTree'
-import FileEditor from '../components/FileEditor'
-import { useFileOperations } from '../hooks/useFileOperations'
-import { CreateFileForm } from '../components/CreateFileForm'
+import { useEffect } from 'react';
+import FileTree from '../components/FileTree';
+import FileEditor from '../components/FileEditor';
+import { useFileOperations } from '../hooks/useFileOperations';
+import { CreateFileForm } from '../components/CreateFileForm';
 
 export default function Home() {
   const {
@@ -16,12 +16,12 @@ export default function Home() {
     handleFileSelect,
     handleFileSave,
     handleFileDelete,
-    handleFolderDelete
-  } = useFileOperations()
+    handleFolderDelete,
+  } = useFileOperations();
 
   useEffect(() => {
-    fetchFiles()
-  }, [fetchFiles])
+    fetchFiles();
+  }, [fetchFiles]);
 
   return (
     <div className="container mx-auto p-4">
@@ -41,7 +41,9 @@ export default function Home() {
           <div className="mb-4">
             <CreateFileForm
               onCreateFile={(fileName) => handleFileSave('', fileName)}
-              currentDirectory={selectedFile ? selectedFile.name.split('/').slice(0, -1).join('/') : ''}
+              currentDirectory={
+                selectedFile ? selectedFile.name.split('/').slice(0, -1).join('/') : ''
+              }
             />
           </div>
           <FileEditor
@@ -53,6 +55,5 @@ export default function Home() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
