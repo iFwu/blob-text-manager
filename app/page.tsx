@@ -43,17 +43,23 @@ export default function Home() {
             <CreateFileForm
               onCreateFile={(fileName) => handleFileSave('', fileName)}
               currentDirectory={
-                selectedFile ? selectedFile.name.split('/').slice(0, -1).join('/') : ''
+                selectedFile
+                  ? selectedFile.isDirectory
+                    ? selectedFile.name
+                    : selectedFile.name.split('/').slice(0, -1).join('/')
+                  : ''
               }
             />
           </div>
-          <FileEditor
-            key={selectedFile?.url}
-            file={selectedFile}
-            content={fileContent}
-            onSave={handleFileSave}
-            isLoading={isFileContentLoading}
-          />
+          {!selectedFile?.isDirectory && (
+            <FileEditor
+              key={selectedFile?.url}
+              file={selectedFile}
+              content={fileContent}
+              onSave={handleFileSave}
+              isLoading={isFileContentLoading}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 
 interface FileTreeProps {
   files: BlobFile[];
-  onFileSelect: (file: BlobFile) => void;
+  onFileSelect: (file: BlobFile | null) => void;
   onFileDelete: (file: BlobFile) => void;
   onFolderDelete: (folderPath: string) => void;
   isLoading: boolean;
@@ -71,50 +71,24 @@ export default function FileTree({
       const directories = new Map<string, TreeDataItem>();
       const rootItems: TreeDataItem[] = [];
 
+      // 首先添加所有目录
       files.forEach((file) => {
+        if (!file.isDirectory) return;
         const parts = file.name.split('/');
         let currentPath = '';
         let currentArray = rootItems;
 
         parts.forEach((part, index) => {
           if (part === '') return;
-
           currentPath = currentPath ? `${currentPath}/${part}` : part;
-          const isLastPart = index === parts.length - 1;
-          const isDirectory = !isLastPart || file.isDirectory;
 
-          if (isDirectory) {
-            if (!directories.has(currentPath)) {
-              const dirItem: TreeDataItem = {
-                id: currentPath,
-                name: part,
-                icon: FolderIcon,
-                openIcon: FolderOpenIcon,
-                children: [],
-                uploadedAt: file.uploadedAt,
-                actions: (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFolderDeleteClick(currentPath);
-                    }}
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </Button>
-                ),
-              };
-              directories.set(currentPath, dirItem);
-              currentArray.push(dirItem);
-            }
-            currentArray = directories.get(currentPath)!.children!;
-          } else {
-            const fileItem: TreeDataItem = {
-              id: file.name,
+          if (!directories.has(currentPath)) {
+            const dirItem: TreeDataItem = {
+              id: currentPath,
               name: part,
-              icon: FileIcon,
+              icon: FolderIcon,
+              openIcon: FolderOpenIcon,
+              children: [],
               uploadedAt: file.uploadedAt,
               actions: (
                 <Button
@@ -123,17 +97,54 @@ export default function FileTree({
                   className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteClick(file);
+                    handleFolderDeleteClick(currentPath);
                   }}
                 >
                   <TrashIcon className="h-4 w-4" />
                 </Button>
               ),
-              onClick: () => onFileSelect(file),
             };
-            currentArray.push(fileItem);
+            directories.set(currentPath, dirItem);
+            currentArray.push(dirItem);
           }
+          currentArray = directories.get(currentPath)!.children!;
         });
+      });
+
+      // 然后添加所有文件
+      files.forEach((file) => {
+        if (file.isDirectory) return;
+        const parts = file.name.split('/');
+        let currentPath = '';
+        let currentArray = rootItems;
+
+        parts.slice(0, -1).forEach((part) => {
+          if (part === '') return;
+          currentPath = currentPath ? `${currentPath}/${part}` : part;
+          currentArray = directories.get(currentPath)?.children || currentArray;
+        });
+
+        const fileItem: TreeDataItem = {
+          id: file.name,
+          name: parts[parts.length - 1],
+          icon: FileIcon,
+          uploadedAt: file.uploadedAt,
+          actions: (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(file);
+              }}
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          ),
+          onClick: () => onFileSelect(file),
+        };
+        currentArray.push(fileItem);
       });
 
       const sortRecursively = (items: TreeDataItem[]) => {
@@ -155,10 +166,23 @@ export default function FileTree({
 
   const handleSelectChange = useCallback(
     (item: TreeDataItem | undefined) => {
-      if (!item) return;
-      const file = files.find((f) => f.name === item.id);
-      if (file && !file.isDirectory) {
+      const file = files.find((f) => f.url === item?.id);
+
+      if (file) {
         onFileSelect(file);
+      } else if (item?.children) {
+        // Create a virtual folder object
+        const virtualFolder: BlobFile = {
+          url: item.id,
+          name: item.name,
+          size: 0,
+          uploadedAt: new Date().toISOString(),
+          isDirectory: true,
+          downloadUrl: '',
+        };
+        onFileSelect(virtualFolder);
+      } else {
+        onFileSelect(null);
       }
     },
     [files, onFileSelect]

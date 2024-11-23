@@ -24,10 +24,15 @@ export function useFileOperations() {
     }
   }, []);
 
-  const handleFileSelect = useCallback(async (file: BlobFile) => {
-    if (file.isDirectory) return;
+  const handleFileSelect = useCallback(async (file: BlobFile | null) => {
     setSelectedFile(file);
+    if (file?.isDirectory) {
+      setFileContent('');
+      return;
+    }
     setFileContent('');
+    if (!file) return;
+
     setIsFileContentLoading(true);
     try {
       const content = await getBlob(file.url);
@@ -53,7 +58,7 @@ export function useFileOperations() {
 
         const newFile: BlobFile = {
           name: fileToSave,
-          url: fileToSave,  // 使用文件名作为临时 URL
+          url: fileToSave, // 使用文件名作为临时 URL
           downloadUrl: '',
           size: isFolder ? 0 : content.length,
           uploadedAt: new Date().toISOString(),
