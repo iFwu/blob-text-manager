@@ -39,7 +39,6 @@ export async function listBlobs(): Promise<BlobFile[]> {
     isDirectory: blob.pathname.endsWith('/') && blob.size === 0,
   }));
 
-  console.log('processedBlobs', processedBlobs);
   return processedBlobs;
 }
 
