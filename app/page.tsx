@@ -12,6 +12,7 @@ export default function Home() {
     selectedFile,
     fileContent,
     isFileTreeLoading,
+    isFileContentLoading,
     fetchFiles,
     handleFileSelect,
     handleFileSave,
@@ -51,6 +52,7 @@ export default function Home() {
             file={selectedFile}
             content={fileContent}
             onSave={handleFileSave}
+            isLoading={isFileContentLoading}
           />
         </div>
       </div>

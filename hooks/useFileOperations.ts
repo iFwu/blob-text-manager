@@ -7,6 +7,7 @@ export function useFileOperations() {
   const [selectedFile, setSelectedFile] = useState<BlobFile | null>(null);
   const [fileContent, setFileContent] = useState<string>('');
   const [isFileTreeLoading, setIsFileTreeLoading] = useState<boolean>(false);
+  const [isFileContentLoading, setIsFileContentLoading] = useState<boolean>(false);
   const pendingDeletions = useRef(new Set<string>());
 
   const memoizedFiles = useMemo(() => files, [files]);
@@ -27,12 +28,15 @@ export function useFileOperations() {
     if (file.isDirectory) return;
     setSelectedFile(file);
     setFileContent('');
+    setIsFileContentLoading(true);
     try {
       const content = await getBlob(file.url);
       setFileContent(content);
     } catch (error) {
       console.error('Error fetching file content:', error);
       setFileContent('Error loading file content');
+    } finally {
+      setIsFileContentLoading(false);
     }
   }, []);
 
@@ -135,6 +139,7 @@ export function useFileOperations() {
     selectedFile,
     fileContent,
     isFileTreeLoading,
+    isFileContentLoading,
     fetchFiles,
     handleFileSelect,
     handleFileSave,
