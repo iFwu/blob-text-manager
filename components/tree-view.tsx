@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,8 +32,32 @@ export function TreeView({
   );
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+  
+  const expandedItemsRef = useRef<Set<string>>(expandedItems);
+  
+  useEffect(() => {
+    expandedItemsRef.current = expandedItems;
+  }, [expandedItems]);
 
   const selectedItemId = controlledSelectedItemId ?? uncontrolledSelectedItemId;
+
+  useEffect(() => {
+    if (selectedItemId) {
+      setExpandedItems(prev => {
+        const newSet = new Set(prev);
+        const parts = selectedItemId.split('/');
+        let currentPath = '';
+        
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (parts[i] === '') continue;
+          currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+          newSet.add(currentPath);
+        }
+        
+        return newSet;
+      });
+    }
+  }, [selectedItemId]);
 
   const normalizePath = (path: string) => path.replace(/\/+$/, '');
 
@@ -41,22 +65,21 @@ export function TreeView({
     setUncontrolledSelectedItemId(item.id);
     onSelectChange?.(item);
 
-    if (item.children) {
-      setExpandedItems((prev) => {
-        const newSet = new Set(prev);
-        newSet.add(item.id);
-        return newSet;
-      });
-    }
-
-    const parts = item.id.split('/');
-    let currentPath = '';
     setExpandedItems((prev) => {
       const newSet = new Set(prev);
+      
+      if (item.children) {
+        newSet.add(item.id);
+      }
+
+      const parts = item.id.split('/');
+      let currentPath = '';
       for (let i = 0; i < parts.length - 1; i++) {
+        if (parts[i] === '') continue;
         currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
         newSet.add(currentPath);
       }
+
       return newSet;
     });
   };
@@ -99,7 +122,7 @@ export function TreeView({
       );
     };
 
-    const isExpanded = expandAll || expandedItems.has(item.id) || shouldKeepExpanded(item.id);
+    const isExpanded = expandAll || expandedItemsRef.current.has(item.id) || shouldKeepExpanded(item.id);
     const hasChildren = (item.children && item.children.length > 0) ?? false;
     const IconComponent = item.icon || (hasChildren ? defaultNodeIcon : defaultLeafIcon);
 
