@@ -18,7 +18,8 @@ export interface TreeDataItem {
 
 interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   data: TreeDataItem[] | TreeDataItem;
-  initialSelectedItemId: string | undefined;
+  initialSelectedItemId?: string | undefined;
+  selectedItemId?: string | undefined;
   onSelectChange?: (item: TreeDataItem | undefined) => void;
   expandAll?: boolean;
   defaultNodeIcon?: React.ComponentType<{ className?: string }>;
@@ -28,6 +29,7 @@ interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
 export function TreeView({
   data,
   initialSelectedItemId,
+  selectedItemId: controlledSelectedItemId,
   onSelectChange,
   expandAll = false,
   defaultNodeIcon,
@@ -35,12 +37,15 @@ export function TreeView({
   className,
   ...props
 }: TreeViewProps) {
-  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(initialSelectedItemId);
+  const [uncontrolledSelectedItemId, setUncontrolledSelectedItemId] = useState<string | undefined>(initialSelectedItemId);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
+  // 如果提供了 selectedItemId，则使用受控模式
+  const selectedItemId = controlledSelectedItemId ?? uncontrolledSelectedItemId;
+
   const handleSelectChange = (item: TreeDataItem) => {
-    setSelectedItemId(item.id);
+    setUncontrolledSelectedItemId(item.id);
     onSelectChange?.(item);
   };
 

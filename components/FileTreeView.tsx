@@ -12,7 +12,7 @@ export function FileTreeView({ treeData, selectedFile, onSelectChange }: FileTre
   return (
     <TreeView
       data={treeData}
-      initialSelectedItemId={selectedFile ?? undefined}
+      selectedItemId={selectedFile}
       onSelectChange={onSelectChange}
       defaultNodeIcon={FolderIcon}
       defaultLeafIcon={FileIcon}

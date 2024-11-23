@@ -47,25 +47,38 @@ export function useFileOperations() {
 
         const isFolder = fileToSave.endsWith('/');
 
-        const result = await putBlob(fileToSave, isFolder ? null : content);
-
         const newFile: BlobFile = {
-          ...selectedFile,
           name: fileToSave,
-          url: result.url,
-          downloadUrl: result.downloadUrl,
+          url: fileToSave,  // 使用文件名作为临时 URL
+          downloadUrl: '',
           size: isFolder ? 0 : content.length,
           uploadedAt: new Date().toISOString(),
           isDirectory: isFolder,
         };
 
+        // 立即更新 selectedFile，不等待保存完成
         if (fileName) {
+          setSelectedFile(newFile);
           setFiles((prevFiles) => [...prevFiles, newFile]);
-        } else {
-          setFiles((prevFiles) => prevFiles.map((f) => (f.name === fileToSave ? newFile : f)));
         }
 
-        setSelectedFile(newFile);
+        const result = await putBlob(fileToSave, isFolder ? null : content);
+
+        // 更新文件的实际 URL
+        const updatedFile = {
+          ...newFile,
+          url: result.url,
+          downloadUrl: result.downloadUrl,
+        };
+
+        if (fileName) {
+          setFiles((prevFiles) => prevFiles.map((f) => (f.name === fileToSave ? updatedFile : f)));
+          setSelectedFile(updatedFile);
+        } else {
+          setFiles((prevFiles) => prevFiles.map((f) => (f.name === fileToSave ? updatedFile : f)));
+          setSelectedFile(updatedFile);
+        }
+
         if (!isFolder) {
           setFileContent(content);
         }

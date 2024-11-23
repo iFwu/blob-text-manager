@@ -112,7 +112,7 @@ export default function FileTree({
             currentArray = directories.get(currentPath)!.children!;
           } else {
             const fileItem: TreeDataItem = {
-              id: file.url,
+              id: file.name,
               name: part,
               icon: FileIcon,
               uploadedAt: file.uploadedAt,
@@ -156,7 +156,7 @@ export default function FileTree({
   const handleSelectChange = useCallback(
     (item: TreeDataItem | undefined) => {
       if (!item) return;
-      const file = files.find((f) => f.url === item.id);
+      const file = files.find((f) => f.name === item.id);
       if (file && !file.isDirectory) {
         onFileSelect(file);
       }
@@ -172,7 +172,7 @@ export default function FileTree({
       ) : (
         <FileTreeView
           treeData={treeData}
-          selectedFile={selectedFile?.url}
+          selectedFile={selectedFile ? selectedFile.name : undefined}
           onSelectChange={handleSelectChange}
         />
       )}
