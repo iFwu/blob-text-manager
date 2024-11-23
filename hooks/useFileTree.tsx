@@ -1,20 +1,13 @@
-'use client';
-
-import { useState, useCallback } from 'react';
-import { FileIcon, FolderIcon, FolderOpenIcon, TrashIcon } from 'lucide-react';
-import { BlobFile } from '../types';
-import { FileTreeView } from './FileTreeView';
-import { DeleteConfirmDialog } from './DeleteConfirmDialog';
-import { ItemToDelete, TreeDataItem } from '../types';
+import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { TrashIcon, FolderIcon, FolderOpenIcon } from 'lucide-react';
+import { BlobFile, TreeDataItem } from '@/types';
 
-interface FileTreeProps {
+interface UseFileTreeProps {
   files: BlobFile[];
+  handleDeleteClick: (file: BlobFile) => void;
+  handleFolderDeleteClick: (folderPath: string) => void;
   onFileSelect: (file: BlobFile | null) => void;
-  onFileDelete: (file: BlobFile) => void;
-  onFolderDelete: (folderPath: string) => void;
-  isLoading: boolean;
-  selectedFile: BlobFile | null;
 }
 
 function sortItems(items: TreeDataItem[]): TreeDataItem[] {
@@ -33,39 +26,12 @@ function sortItems(items: TreeDataItem[]): TreeDataItem[] {
   return [...folders, ...files];
 }
 
-export default function FileTree({
+export function useFileTree({
   files,
+  handleDeleteClick,
+  handleFolderDeleteClick,
   onFileSelect,
-  onFileDelete,
-  onFolderDelete,
-  isLoading,
-  selectedFile,
-}: FileTreeProps) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
-
-  const handleDeleteClick = useCallback((file: BlobFile) => {
-    setItemToDelete({ type: 'file', item: file });
-    setIsDeleteDialogOpen(true);
-  }, []);
-
-  const handleFolderDeleteClick = useCallback((folderPath: string) => {
-    setItemToDelete({ type: 'folder', item: folderPath });
-    setIsDeleteDialogOpen(true);
-  }, []);
-
-  const handleConfirmDelete = useCallback(() => {
-    if (itemToDelete) {
-      if (itemToDelete.type === 'file') {
-        onFileDelete(itemToDelete.item as BlobFile);
-      } else {
-        onFolderDelete(itemToDelete.item as string);
-      }
-    }
-    setIsDeleteDialogOpen(false);
-    setItemToDelete(null);
-  }, [itemToDelete, onFileDelete, onFolderDelete]);
-
+}: UseFileTreeProps) {
   const buildTreeData = useCallback(
     (files: BlobFile[]): TreeDataItem[] => {
       const directories = new Map<string, TreeDataItem>();
@@ -125,7 +91,6 @@ export default function FileTree({
         const fileItem: TreeDataItem = {
           id: file.pathname,
           name: parts[parts.length - 1],
-          icon: FileIcon,
           uploadedAt: file.uploadedAt,
           actions: (
             <Button
@@ -162,40 +127,5 @@ export default function FileTree({
 
   const treeData = buildTreeData(files);
 
-  const handleSelectChange = useCallback(
-    (item: TreeDataItem | undefined) => {
-      if (!item) {
-        onFileSelect(null);
-        return;
-      }
-
-      // 在Vercel Blob存储中，文件夹是作为特殊的文件存储的（size为0且路径以/结尾）
-      // 所以不需要创建虚拟的文件夹对象，直接从files数组中查找即可
-      const normalizedId = item.id.replace(/\/+$/, '');
-      const selectedFile = files.find((file) => file.pathname.replace(/\/+$/, '') === normalizedId);
-      onFileSelect(selectedFile || null);
-    },
-    [files, onFileSelect]
-  );
-
-  return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Files</h2>
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      ) : (
-        <FileTreeView
-          treeData={treeData}
-          selectedFile={selectedFile ? selectedFile.pathname : undefined}
-          onSelectChange={handleSelectChange}
-        />
-      )}
-      <DeleteConfirmDialog
-        isOpen={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={handleConfirmDelete}
-        itemType={itemToDelete?.type || null}
-      />
-    </div>
-  );
+  return { treeData };
 }

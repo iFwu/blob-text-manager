@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { TreeDataItem } from '../types';
+import { TreeDataItem } from '@/types';
 
 interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   data: TreeDataItem[];
@@ -16,7 +16,7 @@ interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   defaultLeafIcon?: React.ComponentType<{ className?: string }>;
 }
 
-export const TreeView = ({
+export function TreeView({
   data,
   initialSelectedItemId,
   selectedItemId: controlledSelectedItemId,
@@ -26,55 +26,44 @@ export const TreeView = ({
   defaultLeafIcon,
   className,
   ...props
-}: TreeViewProps) => {
+}: TreeViewProps) {
   const [uncontrolledSelectedItemId, setUncontrolledSelectedItemId] = useState<string | undefined>(
     initialSelectedItemId
   );
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
-  
+
   const expandedItemsRef = useRef<Set<string>>(expandedItems);
   expandedItemsRef.current = expandedItems;
 
   const selectedItemId = controlledSelectedItemId ?? uncontrolledSelectedItemId;
 
-  const normalizePath = (path: string) => path.replace(/\/+$/, '');
-
-  const updateExpandedItems = useCallback((itemId: string, shouldExpand: boolean = true) => {
-    setExpandedItems(prev => {
+  const updateExpandedItems = useCallback((itemId: string) => {
+    setExpandedItems((prev) => {
       const newSet = new Set(prev);
-      
-      if (shouldExpand) {
-        // 添加所有父文件夹到展开集合
-        const parts = itemId.split('/');
-        let currentPath = '';
-        for (let i = 0; i < parts.length - 1; i++) {
-          if (parts[i] === '') continue;
-          currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
-          newSet.add(currentPath);
-        }
-        
-        // 如果是文件夹，也将其添加到展开集合
-        if (itemId.endsWith('/')) {
-          newSet.add(itemId);
-        }
-      } else {
-        newSet.delete(itemId);
+      const parts = itemId.split('/');
+      let currentPath = '';
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (parts[i] === '') continue;
+        currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+        newSet.add(currentPath);
       }
-      
       return newSet;
     });
   }, []);
 
-  const handleSelectChange = useCallback((item: TreeDataItem) => {
-    setUncontrolledSelectedItemId(item.id);
-    onSelectChange?.(item);
-    updateExpandedItems(item.id);
-  }, [onSelectChange, updateExpandedItems]);
+  const handleSelectChange = useCallback(
+    (item: TreeDataItem) => {
+      setUncontrolledSelectedItemId(item.id);
+      onSelectChange?.(item);
+      updateExpandedItems(item.id);
+    },
+    [onSelectChange, updateExpandedItems]
+  );
 
   const toggleExpand = useCallback((itemId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setExpandedItems(prev => {
+    setExpandedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
@@ -85,7 +74,6 @@ export const TreeView = ({
     });
   }, []);
 
-  // 当选中项改变时，确保其父文件夹保持展开
   useEffect(() => {
     if (selectedItemId) {
       updateExpandedItems(selectedItemId);
@@ -93,56 +81,35 @@ export const TreeView = ({
   }, [selectedItemId, updateExpandedItems]);
 
   const renderTreeItem = (item: TreeDataItem, level: number = 0) => {
-    const shouldKeepExpanded = (itemId: string): boolean => {
-      if (normalizePath(selectedItemId || '') === normalizePath(itemId)) return true;
-      const selected = normalizePath(selectedItemId || '').split('/');
-      const current = normalizePath(itemId).split('/');
-      return (
-        selected.length > current.length &&
-        selected.slice(0, current.length).join('/') === current.join('/')
-      );
-    };
-
-    const isExpanded = expandAll || expandedItemsRef.current.has(item.id) || shouldKeepExpanded(item.id);
-    const hasChildren = (item.children && item.children.length > 0) ?? false;
-    const IconComponent = item.icon || (hasChildren ? defaultNodeIcon : defaultLeafIcon);
-
-    const isParentOfSelected = selectedItemId
-      ? (() => {
-          const selectedParts = normalizePath(selectedItemId).split('/');
-          const currentParts = normalizePath(item.id).split('/');
-          return (
-            normalizePath(item.id) === normalizePath(selectedItemId) ||
-            (selectedParts.length > currentParts.length &&
-              selectedParts.slice(0, currentParts.length).join('/') === normalizePath(item.id))
-          );
-        })()
-      : false;
+    const isExpanded = expandAll || expandedItemsRef.current.has(item.id);
+    const isDirectory = item.children !== undefined;
+    const IconComponent = item.icon || (isDirectory ? defaultNodeIcon : defaultLeafIcon);
 
     return (
       <div key={item.id} className="relative">
         <div
           className={cn(
             'flex items-center py-1 px-2 cursor-pointer hover:bg-accent/50 rounded-md',
+            'relative',
             selectedItemId === item.id && 'bg-accent text-accent-foreground',
-            level > 0 && 'ml-4'
+            level > 0 && 'ml-6'
           )}
+          style={{
+            backgroundImage: level > 0 ? 'linear-gradient(to right, rgb(203 213 225 / 0.5) 1px, transparent 1px)' : 'none',
+            backgroundPosition: '0 50%',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '1px 100%'
+          }}
           onClick={() => handleItemClick(item)}
           onMouseEnter={() => setHoveredItemId(item.id)}
           onMouseLeave={() => setHoveredItemId(null)}
         >
-          {hasChildren && (
+          {isDirectory && (
             <Button
               variant="ghost"
               size="icon"
-              className={cn(
-                'h-4 w-4 p-0 mr-1',
-                isParentOfSelected && 'opacity-30 cursor-not-allowed hover:bg-transparent'
-              )}
+              className="h-4 w-4 p-0 mr-1"
               onClick={(e) => toggleExpand(item.id, e)}
-              title={
-                isParentOfSelected ? 'Cannot collapse while containing selected item' : undefined
-              }
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -165,9 +132,9 @@ export const TreeView = ({
             {item.actions && hoveredItemId === item.id && item.actions}
           </div>
         </div>
-        {hasChildren && isExpanded && (
-          <div className="ml-4">
-            {item.children!.map((child) => renderTreeItem(child, level + 1))}
+        {isDirectory && isExpanded && (
+          <div className="ml-2 relative">
+            {item.children?.map((child) => renderTreeItem(child, level + 1)) || null}
           </div>
         )}
       </div>
@@ -175,21 +142,20 @@ export const TreeView = ({
   };
 
   const handleItemClick = (item: TreeDataItem) => {
-    handleSelectChange(item);
-    // 如果点击的是文件夹，自动展开它
+    // 如果是文件夹，只处理展开/折叠
     if (item.children && item.children.length > 0) {
-      setExpandedItems(prev => {
-        const newSet = new Set(prev);
-        newSet.add(item.id);
-        return newSet;
-      });
+      toggleExpand(item.id);
+      return;
     }
+    
+    // 如果是文件，处理选中
+    handleSelectChange(item);
     item.onClick?.();
   };
 
   return (
     <div className={cn('space-y-1', className)} {...props}>
-      {Array.isArray(data) ? data.map((item) => renderTreeItem(item)) : renderTreeItem(data)}
+      {data.map((item) => renderTreeItem(item))}
     </div>
   );
 }

@@ -32,9 +32,9 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory }: 
       const cleanDirectory = currentDirectory.endsWith('/') ? currentDirectory.slice(0, -1) : currentDirectory;
       const fullPath = cleanDirectory ? `${cleanDirectory}/${fileName}` : fileName;
       onCreateFile(fullPath);
-      setNewName('');
-      inputRef.current?.focus();
     }
+    setNewName('');
+    inputRef.current?.focus();
   }, [newName, currentDirectory, onCreateFile]);
 
   const handleFormSubmit = useCallback((e: FormEvent) => {

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useFileOperations } from '../hooks/useFileOperations';
 
-import FileTree from '../components/FileTree';
+import FileExplorer from '../components/FileExplorer';
 import FileEditor from '../components/FileEditor';
 import CreateForm from '../components/CreateForm';
 
@@ -30,7 +30,7 @@ export default function Home() {
       <h1 className="text-2xl font-bold mb-4">Vercel Blob Manager</h1>
       <div className="flex">
         <div className="w-1/4 pr-4">
-          <FileTree
+          <FileExplorer
             files={files}
             onFileSelect={handleFileSelect}
             onFileDelete={handleFileDelete}
