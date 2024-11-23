@@ -18,7 +18,7 @@ export interface TreeDataItem {
 
 interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
     data: TreeDataItem[] | TreeDataItem
-    initialSelectedItemId?: string
+    initialSelectedItemId: string | undefined
     onSelectChange?: (item: TreeDataItem | undefined) => void
     expandAll?: boolean
     defaultNodeIcon?: React.ComponentType<{ className?: string }>

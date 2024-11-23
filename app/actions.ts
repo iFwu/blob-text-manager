@@ -1,23 +1,18 @@
 'use server'
 
 import { list, put, del } from '@vercel/blob';
-
-export interface BlobFile {
-  name: string;
-  url: string;
-  downloadUrl: string;
-  size: number;
-  uploadedAt: string;
-  isDirectory: boolean;
-}
+import { BlobFile } from '../types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 
-function handleEmptyContent(content: string | File | null, name: string): string | File | Blob {
+function handleEmptyContent(content: string | File | null, name: string): string | File {
   if (typeof content === 'string') {
     return content.trim() === '' ? ZERO_WIDTH_SPACE : content.replace(/^\u200B/, '');
   } else if (content instanceof File && content.size === 0) {
     return new File([ZERO_WIDTH_SPACE], name, { type: content.type });
+  }
+  if (!content) {
+    return new File([ZERO_WIDTH_SPACE], name, { type: "text/plain" });
   }
   return content;
 }
@@ -75,13 +70,11 @@ export async function putBlob(name: string, content: string | File | null) {
   }
   
   const isFolder = name.endsWith('/');
-  
   if (isFolder) {
-    content = new Blob([], { type: 'application/x-empty' });
+    content = new File([], name, { type: "application/x-empty" });
   } else {
     content = handleEmptyContent(content, name);
   }
-  
   const result = await put(name, content, { 
     access: 'public',
     addRandomSuffix: true
@@ -91,13 +84,11 @@ export async function putBlob(name: string, content: string | File | null) {
 
 async function createNewFile(name: string, content: string | File | null) {
   const isFolder = name.endsWith('/');
-  
   if (isFolder) {
-    content = new Blob([], { type: 'application/x-empty' });
+    content = new File([], name, { type: "application/x-empty" });
   } else {
     content = handleEmptyContent(content, name);
   }
-  
   const result = await put(name, content, { 
     access: 'public',
     addRandomSuffix: true

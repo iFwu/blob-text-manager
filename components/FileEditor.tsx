@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BlobFile } from '../lib/blobService'
+import { BlobFile } from '../types'
 
 interface FileEditorProps {
   file: BlobFile | null

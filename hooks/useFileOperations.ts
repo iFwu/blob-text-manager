@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from 'react'
-import { listBlobs, getBlob, putBlob, deleteBlob, BlobFile } from '../app/actions'
+import { listBlobs, getBlob, putBlob, deleteBlob } from '../app/actions'
+import { BlobFile } from '../types'
 
 export function useFileOperations() {
   const [files, setFiles] = useState<BlobFile[]>([])

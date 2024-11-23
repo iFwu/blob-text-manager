@@ -1,5 +1,3 @@
-import { BlobFile } from '../app/actions'
-
 export interface TreeDataItem {
   id: string
   name: string
@@ -16,3 +14,11 @@ export interface ItemToDelete {
   item: BlobFile | string
 }
 
+export interface BlobFile {
+  name: string;
+  url: string;
+  downloadUrl: string;
+  size: number;
+  uploadedAt: string;
+  isDirectory: boolean;
+}

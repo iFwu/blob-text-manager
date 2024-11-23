@@ -2,10 +2,10 @@
 
 import { useState, useCallback } from 'react'
 import { FileIcon, FolderIcon, FolderOpenIcon, TrashIcon } from 'lucide-react'
-import { BlobFile } from '../app/actions'
+import { BlobFile } from '../types'
 import { FileTreeView } from './FileTreeView'
 import { DeleteConfirmDialog } from './DeleteConfirmDialog'
-import { ItemToDelete, TreeDataItem } from './types'
+import { ItemToDelete, TreeDataItem } from '../types'
 import { Button } from '@/components/ui/button'
 
 interface FileTreeProps {
@@ -166,7 +166,7 @@ export default function FileTree({
       ) : (
         <FileTreeView
           treeData={treeData}
-          selectedFile={selectedFile?.url || null}
+          selectedFile={selectedFile?.url}
           onSelectChange={handleSelectChange}
         />
       )}
