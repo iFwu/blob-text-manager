@@ -12,8 +12,8 @@ interface UseFileTreeProps {
 }
 
 function sortItems(items: TreeDataItem[]): TreeDataItem[] {
-  const folders = items.filter((item) => item.children);
-  const files = items.filter((item) => !item.children);
+  const folders = items.filter((item) => Array.isArray(item.children));
+  const files = items.filter((item) => !Array.isArray(item.children));
 
   const sortByDate = (a: TreeDataItem, b: TreeDataItem) => {
     const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
@@ -129,7 +129,7 @@ export function useFileTree({
       const sortRecursively = (items: TreeDataItem[]) => {
         const sortedItems = sortItems(items);
         sortedItems.forEach((item) => {
-          if (item.children) {
+          if (Array.isArray(item.children)) {
             item.children = sortRecursively(item.children);
           }
         });

@@ -24,7 +24,6 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, in
       setPrefixWidth(width);
     }
     if (initialPath) {
-      setNewName(initialPath);
       inputRef.current?.focus();
     }
   }, [effectiveDirectory, initialPath]);

@@ -74,7 +74,7 @@ export function TreeView({
   );
 
   const handleItemClick = (item: TreeDataItem) => {
-    if (item.children && item.children.length > 0) {
+    if (Array.isArray(item.children)) {
       toggleExpand(item.id);
       return;
     }
@@ -90,9 +90,9 @@ export function TreeView({
     parentIsLast: boolean[] = []
   ) => {
     const isExpanded = expandAll || expandedItemsRef.current.has(item.id);
-    const isDirectory = item.children !== undefined;
+    const isDirectory = Array.isArray(item.children);
+    // empty directories are treated as nodes
     const IconComponent = item.icon || (isDirectory ? defaultNodeIcon : defaultLeafIcon);
-    const hasChildren = item.children && item.children.length > 0;
 
     return (
       <div key={item.id} className="relative group">
