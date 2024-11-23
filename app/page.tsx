@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useFileOperations } from '../hooks/useFileOperations';
+
 import FileTree from '../components/FileTree';
 import FileEditor from '../components/FileEditor';
-import { useFileOperations } from '../hooks/useFileOperations';
-import { CreateFileForm } from '../components/CreateFileForm';
+import CreateForm from '../components/CreateForm';
 
 export default function Home() {
   const {
@@ -40,7 +41,7 @@ export default function Home() {
         </div>
         <div className="w-3/4">
           <div className="mb-4">
-            <CreateFileForm
+            <CreateForm
               onCreateFile={(fileName) => handleFileSave('', fileName)}
               currentDirectory={
                 selectedFile

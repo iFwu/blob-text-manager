@@ -9,10 +9,12 @@ interface FileTreeViewProps {
 }
 
 export function FileTreeView({ treeData, selectedFile, onSelectChange }: FileTreeViewProps) {
+  const normalizedSelectedFile = selectedFile?.replace(/\/+$/, '');
+
   return (
     <TreeView
       data={treeData}
-      selectedItemId={selectedFile}
+      selectedItemId={normalizedSelectedFile}
       onSelectChange={onSelectChange}
       defaultNodeIcon={FolderIcon}
       defaultLeafIcon={FileIcon}

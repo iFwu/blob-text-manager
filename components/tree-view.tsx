@@ -33,14 +33,14 @@ export function TreeView({
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
-  // 如果提供了 selectedItemId，则使用受控模式
   const selectedItemId = controlledSelectedItemId ?? uncontrolledSelectedItemId;
+
+  const normalizePath = (path: string) => path.replace(/\/+$/, '');
 
   const handleSelectChange = (item: TreeDataItem) => {
     setUncontrolledSelectedItemId(item.id);
     onSelectChange?.(item);
 
-    // 如果是文件夹，确保它被展开
     if (item.children) {
       setExpandedItems((prev) => {
         const newSet = new Set(prev);
@@ -49,7 +49,6 @@ export function TreeView({
       });
     }
 
-    // 确保所有父级目录都展开
     const parts = item.id.split('/');
     let currentPath = '';
     setExpandedItems((prev) => {
@@ -63,18 +62,16 @@ export function TreeView({
   };
 
   const toggleExpand = (itemId: string, e?: React.MouseEvent) => {
-    e?.stopPropagation(); // 阻止事件冒泡，防止触发选择
+    e?.stopPropagation();
 
-    // 检查是否是当前选中文件的父级目录
     if (selectedItemId) {
-      const selectedParts = selectedItemId.split('/');
-      const currentParts = itemId.split('/');
+      const selectedParts = normalizePath(selectedItemId).split('/');
+      const currentParts = normalizePath(itemId).split('/');
       const isParentOfSelected =
-        itemId === selectedItemId ||
+        normalizePath(itemId) === normalizePath(selectedItemId) ||
         (selectedParts.length > currentParts.length &&
-          selectedParts.slice(0, currentParts.length).join('/') === itemId);
+          selectedParts.slice(0, currentParts.length).join('/') === normalizePath(itemId));
 
-      // 如果是父级目录或选中的项目，不允许折叠
       if (isParentOfSelected) {
         return;
       }
@@ -83,7 +80,6 @@ export function TreeView({
     setExpandedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
-        // 如果是手动折叠，记录这个状态
         newSet.delete(itemId);
       } else {
         newSet.add(itemId);
@@ -93,13 +89,13 @@ export function TreeView({
   };
 
   const renderTreeItem = (item: TreeDataItem, level: number = 0) => {
-    // 如果当前项是选中项的父级，也要保持展开
     const shouldKeepExpanded = (itemId: string): boolean => {
-      if (selectedItemId === itemId) return true;
-      const selected = selectedItemId?.split('/') || [];
-      const current = itemId.split('/');
+      if (normalizePath(selectedItemId || '') === normalizePath(itemId)) return true;
+      const selected = normalizePath(selectedItemId || '').split('/');
+      const current = normalizePath(itemId).split('/');
       return (
-        selected.length > current.length && selected.slice(0, current.length).join('/') === itemId
+        selected.length > current.length &&
+        selected.slice(0, current.length).join('/') === current.join('/')
       );
     };
 
@@ -107,15 +103,14 @@ export function TreeView({
     const hasChildren = (item.children && item.children.length > 0) ?? false;
     const IconComponent = item.icon || (hasChildren ? defaultNodeIcon : defaultLeafIcon);
 
-    // 检查是否是当前选中文件的父级目录
     const isParentOfSelected = selectedItemId
       ? (() => {
-          const selectedParts = selectedItemId.split('/');
-          const currentParts = item.id.split('/');
+          const selectedParts = normalizePath(selectedItemId).split('/');
+          const currentParts = normalizePath(item.id).split('/');
           return (
-            item.id === selectedItemId ||
+            normalizePath(item.id) === normalizePath(selectedItemId) ||
             (selectedParts.length > currentParts.length &&
-              selectedParts.slice(0, currentParts.length).join('/') === item.id)
+              selectedParts.slice(0, currentParts.length).join('/') === normalizePath(item.id))
           );
         })()
       : false;

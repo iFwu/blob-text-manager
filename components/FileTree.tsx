@@ -71,7 +71,6 @@ export default function FileTree({
       const directories = new Map<string, TreeDataItem>();
       const rootItems: TreeDataItem[] = [];
 
-      // 首先添加所有目录
       files.forEach((file) => {
         if (!file.isDirectory) return;
         const parts = file.pathname.split('/');
@@ -111,7 +110,6 @@ export default function FileTree({
         });
       });
 
-      // 然后添加所有文件
       files.forEach((file) => {
         if (file.isDirectory) return;
         const parts = file.pathname.split('/');
@@ -166,21 +164,16 @@ export default function FileTree({
 
   const handleSelectChange = useCallback(
     (item: TreeDataItem | undefined) => {
-      const file = files.find((f) => f.pathname === item?.id);
-      if (file) {
-        onFileSelect(file);
-      } else if (item?.children) {
-        // Create a virtual folder object
-        const virtualFolder: BlobFile = {
-          pathname: item.id,
-          size: 0,
-          uploadedAt: new Date().toISOString(),
-          isDirectory: true,
-        };
-        onFileSelect(virtualFolder);
-      } else {
+      if (!item) {
         onFileSelect(null);
+        return;
       }
+
+      // 在Vercel Blob存储中，文件夹是作为特殊的文件存储的（size为0且路径以/结尾）
+      // 所以不需要创建虚拟的文件夹对象，直接从files数组中查找即可
+      const normalizedId = item.id.replace(/\/+$/, '');
+      const selectedFile = files.find((file) => file.pathname.replace(/\/+$/, '') === normalizedId);
+      onFileSelect(selectedFile || null);
     },
     [files, onFileSelect]
   );
