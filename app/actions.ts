@@ -1,7 +1,7 @@
 'use server';
 
-import { list, put, del } from '@vercel/blob';
-import { BlobFile } from '../types';
+import { list, put, del, createFolder } from '@vercel/blob';
+import { BlobFile, BlobResult, BlobFileResult, BlobFolderResult, BlobFolder } from '../types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 
@@ -61,7 +61,7 @@ export async function getBlob(url: string): Promise<string> {
   return content;
 }
 
-export async function putBlob(pathname: string, content: string | File | null) {
+export async function putBlob(pathname: string, content: string | File | null): Promise<BlobResult> {
   console.log('Calling list API before put...');
   const { blobs } = await list();
   console.log('List API Response:', JSON.stringify(blobs, null, 2));
@@ -71,7 +71,6 @@ export async function putBlob(pathname: string, content: string | File | null) {
   );
   console.log('Found existing files:', JSON.stringify(existingFiles, null, 2));
 
-  // 如果文件已存在，删除所有旧版本
   for (const oldVersion of existingFiles) {
     console.log('Deleting old version:', oldVersion.url);
     await del(oldVersion.url);
@@ -79,10 +78,16 @@ export async function putBlob(pathname: string, content: string | File | null) {
 
   const isFolder = pathname.endsWith('/');
   if (isFolder) {
-    content = new File([], pathname, { type: 'application/x-directory' });
-  } else {
-    content = handleEmptyContent(content, pathname);
+    console.log('Creating folder:', pathname);
+    const result = await createFolder(pathname);
+    return {
+      type: 'folder',
+      url: result.url,
+      folder: result as BlobFolder
+    } as BlobFolderResult;
   }
+
+  content = handleEmptyContent(content, pathname);
 
   console.log('Calling put API with:', {
     pathname,
@@ -92,10 +97,14 @@ export async function putBlob(pathname: string, content: string | File | null) {
 
   const result = await put(pathname, content, {
     access: 'public',
-    addRandomSuffix: !isFolder,
+    addRandomSuffix: true
   });
   console.log('Put API Response:', JSON.stringify(result, null, 2));
-  return result;
+  return {
+    type: 'file',
+    url: result.url,
+    downloadUrl: result.downloadUrl
+  } as BlobFileResult;
 }
 
 export async function deleteBlob(url: string) {
