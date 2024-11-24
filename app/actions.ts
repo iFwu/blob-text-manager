@@ -1,7 +1,7 @@
 'use server';
 
 import { list, put, del, createFolder } from '@vercel/blob';
-import { BlobFile, BlobResult, BlobFileResult, BlobFolderResult, BlobFolder } from '../types';
+import { BlobFile, BlobResult, BlobFileResult, BlobFolderResult } from '../types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 
@@ -83,8 +83,7 @@ export async function putBlob(pathname: string, content: string | File | null): 
     return {
       type: 'folder',
       url: result.url,
-      folder: result as BlobFolder
-    } as BlobFolderResult;
+    } satisfies BlobFolderResult;
   }
 
   content = handleEmptyContent(content, pathname);
@@ -97,6 +96,7 @@ export async function putBlob(pathname: string, content: string | File | null): 
 
   const result = await put(pathname, content, {
     access: 'public',
+    addRandomSuffix: true,
     addRandomSuffix: true
   });
   console.log('Put API Response:', JSON.stringify(result, null, 2));
@@ -104,7 +104,7 @@ export async function putBlob(pathname: string, content: string | File | null): 
     type: 'file',
     url: result.url,
     downloadUrl: result.downloadUrl
-  } as BlobFileResult;
+  } satisfies BlobFileResult;
 }
 
 export async function deleteBlob(url: string) {
