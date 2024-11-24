@@ -1,26 +1,45 @@
-# Vercel Blob Manager
+# Blob Text Manager
 
-A modern web application for managing files and folders in Vercel Blob Storage. Built with Next.js 14 and the latest Vercel Blob SDK.
+A specialized text file management application built on Vercel Blob Storage. This tool focuses on providing a clean, efficient interface for managing and editing text files, making it perfect for content management systems, blog platforms, or any text-based workflow.
 
-## Features
+## Current Focus
 
-- 📁 File and Directory Management
-  - Create, delete, and navigate directories
-  - Upload and manage files
-  - Tree-style file explorer with intuitive UI
-- ✏️ File Editing
-  - Built-in text editor for file contents
-  - Real-time content updates
-  - Support for empty files and directories
-- 🎯 Modern UI/UX
-  - Clean and responsive design
-  - Split-pane layout for efficient workspace management
-  - Loading states and smooth transitions
-- 🛠️ Technical Features
+- 📝 Pure Text File Management
+  - Create, edit, and organize text files
+  - Hierarchical directory structure
+  - Clean and efficient text editor interface
+- 🎯 Core Features
+  - Tree-style file explorer
+  - Real-time text editing
+  - Directory management
+  - Simple and intuitive UI
+
+## Roadmap
+
+- 📘 Markdown Support
+  - Markdown editing with preview
+  - Rich text formatting tools
+  - Export capabilities
+- 🔄 Blog Management Features
+  - Post scheduling
+  - Metadata management
+  - Category and tag organization
+- 🎨 Enhanced UI/UX
+  - Theme customization
+  - Keyboard shortcuts
+  - Split view editing
+
+## Technical Features
+
+- 🛠️ Modern Stack
   - Built with Next.js 14 App Router
   - Server/Client implementation switching for testing
   - TypeScript for type safety
   - Shadcn UI components for consistent design
+- 💾 Storage
+  - Powered by Vercel Blob Storage
+  - Efficient file organization
+  - Secure file management
 
 ## Getting Started
 
@@ -34,8 +53,8 @@ A modern web application for managing files and folders in Vercel Blob Storage. 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/iFwu/vercel-blob-manager.git
-cd vercel-blob-manager
+git clone https://github.com/iFwu/blob-text-manager.git
+cd blob-text-manager
 ```
 
 2. Install dependencies:
