@@ -18,7 +18,9 @@ function handleEmptyContent(content: string | File | null, pathname: string): st
 }
 
 export async function listBlobs(): Promise<BlobFile[]> {
+  console.log('Calling list API...');
   const { blobs } = await list();
+  console.log('List API Response:', JSON.stringify(blobs, null, 2));
 
   const fileMap = new Map<string, any>();
 
@@ -43,39 +45,61 @@ export async function listBlobs(): Promise<BlobFile[]> {
 }
 
 export async function getBlob(url: string): Promise<string> {
+  console.log('Fetching blob content from URL:', url);
   const response = await fetch(url);
   if (!response.ok) {
+    console.error('Failed to fetch blob content:', response.status, response.statusText);
     throw new Error('Failed to fetch blob content');
   }
   const content = await response.text();
+  console.log('Blob content response:', {
+    status: response.status,
+    headers: Object.fromEntries(response.headers.entries()),
+    contentLength: content.length,
+    preview: content.slice(0, 100) + (content.length > 100 ? '...' : '')
+  });
   return content;
 }
 
 export async function putBlob(pathname: string, content: string | File | null) {
+  console.log('Calling list API before put...');
   const { blobs } = await list();
+  console.log('List API Response:', JSON.stringify(blobs, null, 2));
+
   const existingFiles = blobs.filter(
     (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
+  console.log('Found existing files:', JSON.stringify(existingFiles, null, 2));
 
   // 如果文件已存在，删除所有旧版本
   for (const oldVersion of existingFiles) {
+    console.log('Deleting old version:', oldVersion.url);
     await del(oldVersion.url);
   }
 
   const isFolder = pathname.endsWith('/');
   if (isFolder) {
-    content = new File([], pathname, { type: 'application/x-empty' });
+    content = new File([], pathname, { type: 'application/x-directory' });
   } else {
     content = handleEmptyContent(content, pathname);
   }
+
+  console.log('Calling put API with:', {
+    pathname,
+    contentType: content instanceof File ? content.type : typeof content,
+    isFolder
+  });
 
   const result = await put(pathname, content, {
     access: 'public',
     addRandomSuffix: !isFolder,
   });
+  console.log('Put API Response:', JSON.stringify(result, null, 2));
   return result;
 }
 
 export async function deleteBlob(url: string) {
+  console.log('Calling delete API for URL:', url);
   await del(url);
+  console.log('Delete API completed');
 }
