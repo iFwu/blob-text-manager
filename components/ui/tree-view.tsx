@@ -8,28 +8,22 @@ import { TreeDataItem } from '@/types';
 
 interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   data: TreeDataItem[];
-  initialSelectedItemId?: string | null;
   selectedItemId?: string | null;
   onSelectChange?: (item: TreeDataItem | undefined) => void;
-  expandAll?: boolean;
   defaultNodeIcon?: React.ComponentType<{ className?: string }>;
   defaultLeafIcon?: React.ComponentType<{ className?: string }>;
 }
 
 export function TreeView({
   data,
-  initialSelectedItemId,
   selectedItemId: controlledSelectedItemId,
   onSelectChange,
-  expandAll = false,
   defaultNodeIcon,
   defaultLeafIcon,
   className,
   ...props
 }: TreeViewProps) {
-  const [uncontrolledSelectedItemId, setUncontrolledSelectedItemId] = useState<string | null>(
-    initialSelectedItemId ?? null
-  );
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
@@ -38,11 +32,11 @@ export function TreeView({
 
   useEffect(() => {
     if (controlledSelectedItemId === null) {
-      setUncontrolledSelectedItemId(null);
+      setSelectedItemId(null);
     }
   }, [controlledSelectedItemId]);
 
-  const selectedItemId = controlledSelectedItemId ?? uncontrolledSelectedItemId;
+  const activeItemId = controlledSelectedItemId ?? selectedItemId;
 
   const updateExpandedItems = useCallback((itemId: string) => {
     setExpandedItems((prev) => {
@@ -59,14 +53,14 @@ export function TreeView({
   }, []);
 
   useEffect(() => {
-    if (selectedItemId) {
-      updateExpandedItems(selectedItemId);
+    if (activeItemId) {
+      updateExpandedItems(activeItemId);
     }
-  }, [selectedItemId, updateExpandedItems]);
+  }, [activeItemId, updateExpandedItems]);
 
   const handleSelectChange = useCallback(
     (item: TreeDataItem) => {
-      setUncontrolledSelectedItemId(item.id);
+      setSelectedItemId(item.id);
       onSelectChange?.(item);
       updateExpandedItems(item.id);
     },
@@ -89,7 +83,7 @@ export function TreeView({
     isLastItem: boolean = false,
     parentIsLast: boolean[] = []
   ) => {
-    const isExpanded = expandAll || expandedItemsRef.current.has(item.id);
+    const isExpanded = expandedItemsRef.current.has(item.id);
     const isDirectory = Array.isArray(item.children);
     // empty directories are treated as nodes
     const IconComponent = item.icon || (isDirectory ? defaultNodeIcon : defaultLeafIcon);
@@ -125,7 +119,7 @@ export function TreeView({
         <div
           className={cn(
             'flex items-center py-1 px-2 cursor-pointer hover:bg-accent/50 rounded-md relative',
-            selectedItemId === item.id && 'bg-accent text-accent-foreground'
+            activeItemId === item.id && 'bg-accent text-accent-foreground'
           )}
           style={{
             marginLeft: level > 0 ? `${level * 16}px` : undefined,
