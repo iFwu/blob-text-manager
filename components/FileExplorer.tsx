@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { FileIcon, FolderIcon, FolderOpenIcon, TrashIcon } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { FileIcon, FolderIcon } from 'lucide-react';
 import { TreeView } from './ui/tree-view';
-import { Button } from '@/components/ui/button';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { BlobFile, ItemToDelete, TreeDataItem } from '@/types';
 import { useFileTree } from '@/hooks/useFileTree';
+import { DirectoryAction, FileAction } from './ui/tree-actions';
 
 interface FileExplorerProps {
   files: BlobFile[];
@@ -29,7 +29,6 @@ export default function FileExplorer({
 }: FileExplorerProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
-  const [shouldClearSelection, setShouldClearSelection] = useState(false);
 
   const handleDeleteClick = useCallback((file: BlobFile) => {
     setItemToDelete({ type: 'file', item: file });
@@ -59,12 +58,18 @@ export default function FileExplorer({
     handleFolderDeleteClick,
     onFileSelect: (file) => {
       onFileSelect(file);
-      setShouldClearSelection(false);
     },
-    onAddDirectory: (directoryPath) => {
-      onAddDirectory(directoryPath);
-      setShouldClearSelection(true);
-    },
+    onAddDirectory,
+    renderFileActions: (file) => (
+      <FileAction onDelete={() => handleDeleteClick(file)} />
+    ),
+    renderDirectoryActions: (path) => (
+      <DirectoryAction
+        onDelete={() => handleFolderDeleteClick(path)}
+        onAdd={() => onAddDirectory(path)}
+        onFileSelect={onFileSelect}
+      />
+    ),
   });
 
   const handleSelectChange = useCallback(
@@ -89,7 +94,7 @@ export default function FileExplorer({
       ) : (
         <TreeView
           data={treeData}
-          selectedItemId={shouldClearSelection ? null : selectedFile?.pathname ?? null}
+          selectedItemId={selectedFile?.pathname ?? null}
           onSelectChange={handleSelectChange}
           defaultNodeIcon={FolderIcon}
           defaultLeafIcon={FileIcon}
