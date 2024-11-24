@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-col">
       <div className="px-4 md:container md:mx-auto">
-        <h1 className="text-2xl font-bold py-4">Vercel Blob Manager</h1>
+        <h1 className="text-2xl font-bold py-4">Blob Text Manager</h1>
         <Split 
           className="flex flex-1 overflow-hidden"
           sizes={[25, 75]}
