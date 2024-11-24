@@ -5,7 +5,7 @@
  * - In production: Uses server-side implementation
  */
 
-const isTest = process.env.NODE_ENV === 'test';
+const isTest = process.env.NEXT_PUBLIC_IS_TEST === 'true';
 
 // Dynamically import the appropriate implementation
 const actions = isTest
