@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vercel Blob Manager
+
+A modern web application for managing files and folders in Vercel Blob Storage. Built with Next.js 14 and the latest Vercel Blob SDK.
+
+## Features
+
+- 📁 File and Directory Management
+  - Create, delete, and navigate directories
+  - Upload and manage files
+  - Tree-style file explorer with intuitive UI
+- ✏️ File Editing
+  - Built-in text editor for file contents
+  - Real-time content updates
+  - Support for empty files and directories
+- 🎯 Modern UI/UX
+  - Clean and responsive design
+  - Split-pane layout for efficient workspace management
+  - Loading states and smooth transitions
+- 🛠️ Technical Features
+  - Built with Next.js 14 App Router
+  - Server/Client implementation switching for testing
+  - TypeScript for type safety
+  - Shadcn UI components for consistent design
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18.17 or later
+- pnpm (recommended) or npm
+- A Vercel account and Blob Storage access
+
+### Environment Setup
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/iFwu/vercel-blob-manager.git
+cd vercel-blob-manager
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Create a `.env.local` file with your Vercel Blob credentials:
+```
+NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN="your_vercel_blob_token"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. For testing with client-side implementation, create a `.env.test.local`:
+```
+NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN="your_vercel_blob_token"
+NEXT_PUBLIC_IS_TEST="true"
+```
 
-## Learn More
+### Development
 
-To learn more about Next.js, take a look at the following resources:
+Run the development server:
+```bash
+pnpm dev
+# or for testing environment
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture
 
-## Deploy on Vercel
+The application uses a hybrid approach for Blob Storage operations:
+- Server-side implementation (`actions.server.ts`) for production
+- Client-side implementation (`actions.client.ts`) for testing
+- Environment-based switching between implementations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **UI Components**: Shadcn UI
+- **Storage**: Vercel Blob
+- **State Management**: React Hooks
+- **Development**: pnpm, ESLint, Prettier
+
+## License
+
+MIT License - feel free to use this project for your own purposes.
