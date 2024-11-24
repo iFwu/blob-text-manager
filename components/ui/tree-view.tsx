@@ -14,6 +14,8 @@ interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   defaultLeafIcon?: React.ComponentType<{ className?: string }>;
 }
 
+const INDENT_WIDTH = 16;
+
 export function TreeView({
   data,
   selectedItemId: controlledSelectedItemId,
@@ -106,7 +108,7 @@ export function TreeView({
                     "left-[12px]"
                   )}
                   style={{
-                    left: `${(i * 16) + 16}px`,
+                    left: `${(i + 1) * INDENT_WIDTH - 1}px`,
                     top: 0,
                     bottom: 0,
                   }}
@@ -122,7 +124,7 @@ export function TreeView({
             activeItemId === item.id && 'bg-accent text-accent-foreground'
           )}
           style={{
-            marginLeft: level > 0 ? `${level * 16}px` : undefined,
+            marginLeft: level > 0 ? `${level * INDENT_WIDTH}px` : undefined,
           }}
           onClick={() => handleItemClick(item)}
           onMouseEnter={() => setHoveredItemId(item.id)}

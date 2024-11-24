@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { listBlobs, getBlob, putBlob, deleteBlob } from '../app/actions';
-import { BlobFile } from '../types';
+import { BlobFile, BlobResult, BlobFileResult, BlobFolderResult } from '../types';
 
 export function useFileOperations() {
   const [files, setFiles] = useState<BlobFile[]>([]);
@@ -8,7 +8,7 @@ export function useFileOperations() {
   const [fileContent, setFileContent] = useState<string>('');
   const [isFileTreeLoading, setIsFileTreeLoading] = useState<boolean>(false);
   const [isFileContentLoading, setIsFileContentLoading] = useState<boolean>(false);
-  const pendingDeletions = useRef(new Set<string>());
+  const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
 
   const memoizedFiles = useMemo(() => files, [files]);
 
@@ -16,7 +16,7 @@ export function useFileOperations() {
     setIsFileTreeLoading(true);
     try {
       const blobList = await listBlobs();
-      setFiles(blobList.filter((file) => !pendingDeletions.current.has(file.pathname)));
+      setFiles(blobList);
     } catch (error) {
       console.error('Error fetching file list:', error);
     } finally {
@@ -75,7 +75,7 @@ export function useFileOperations() {
         const updatedFile = {
           ...newFile,
           url: result.url,
-          downloadUrl: result.downloadUrl,
+          ...(result.type === 'file' ? { downloadUrl: result.downloadUrl } : {}),
         };
 
         if (fileName) {
@@ -104,36 +104,49 @@ export function useFileOperations() {
     async (file: BlobFile) => {
       if (!file.url) return;
 
-      pendingDeletions.current.add(file.pathname);
-      setFiles((prevFiles) => prevFiles.filter((f) => f.pathname !== file.pathname));
+      // 如果是文件夹，获取所有相关文件
+      const filesToDelete = file.isDirectory
+        ? files.filter((f) => f.pathname.startsWith(file.pathname))
+        : [file];
 
-      if (selectedFile?.pathname === file.pathname) {
+      // 更新 UI 状态
+      setFiles((prevFiles) =>
+        prevFiles.filter((f) => !filesToDelete.some(fd => fd.pathname === f.pathname))
+      );
+
+      // 如果当前选中的文件在要删除的列表中，清除选择
+      if (selectedFile && filesToDelete.some(f => selectedFile.pathname.startsWith(f.pathname))) {
         setSelectedFile(null);
         setFileContent('');
       }
 
+      // 添加正在删除的文件到状态
+      setDeletingFiles(prev => {
+        const newSet = new Set(prev);
+        filesToDelete.forEach(f => newSet.add(f.pathname));
+        return newSet;
+      });
+
+      // 删除所有相关文件
       try {
-        await deleteBlob(file.url);
+        await Promise.all(
+          filesToDelete
+            .filter(f => f.url)
+            .map(f => deleteBlob(f.url!))
+        );
       } catch (error) {
-        console.error('Error deleting file:', error);
-        pendingDeletions.current.delete(file.pathname);
-        await fetchFiles(); // Refresh the file list to restore the file if deletion failed
+        console.error('Error deleting files:', error);
+        await fetchFiles();
+      } finally {
+        // 从正在删除状态中移除
+        setDeletingFiles(prev => {
+          const newSet = new Set(prev);
+          filesToDelete.forEach(f => newSet.delete(f.pathname));
+          return newSet;
+        });
       }
     },
-    [selectedFile, fetchFiles]
-  );
-
-  const handleFolderDelete = useCallback(
-    async (folderPath: string) => {
-      const filesToDelete = files.filter((file) => file.pathname.startsWith(folderPath));
-
-      for (const file of filesToDelete) {
-        await handleFileDelete(file);
-      }
-
-      setFiles((prevFiles) => prevFiles.filter((file) => !file.pathname.startsWith(folderPath)));
-    },
-    [files, handleFileDelete]
+    [files, selectedFile, fetchFiles]
   );
 
   return {
@@ -142,10 +155,10 @@ export function useFileOperations() {
     fileContent,
     isFileTreeLoading,
     isFileContentLoading,
+    deletingFiles,
     fetchFiles,
     handleFileSelect,
     handleFileSave,
     handleFileDelete,
-    handleFolderDelete,
   };
 }
