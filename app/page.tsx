@@ -80,15 +80,13 @@ export default function Home() {
                 }
                 initialPath={initialPath}
               />
-              {!selectedFile?.isDirectory && (
-                <FileEditor
-                  key={selectedFile?.url}
-                  file={selectedFile}
-                  content={fileContent}
-                  onSave={handleFileSave}
-                  isLoading={isFileContentLoading}
-                />
-              )}
+              <FileEditor
+                key={selectedFile?.url}
+                file={selectedFile?.isDirectory ? null : selectedFile}
+                content={fileContent}
+                onSave={handleFileSave}
+                isLoading={isFileContentLoading}
+              />
             </div>
           </div>
         </Split>
