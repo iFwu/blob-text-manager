@@ -19,13 +19,11 @@ function handleEmptyContent(content: string | File | null, pathname: string): st
 
 export async function listBlobs(): Promise<BlobFile[]> {
   const startTime = Date.now();
-  console.log('[Server] Initiating list API request');
+  console.log(`[Server] List API request started at ${new Date(startTime).toISOString()}`);
   
   const { blobs } = await list();
-  console.log('[Server] List API Response:', JSON.stringify(blobs, null, 2));
 
   const fileMap = new Map<string, any>();
-
   blobs.forEach((blob) => {
     const pathWithoutSuffix = blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1');
     const existing = fileMap.get(pathWithoutSuffix);
@@ -44,30 +42,23 @@ export async function listBlobs(): Promise<BlobFile[]> {
   }));
 
   const endTime = Date.now();
-  console.log(`[Server] List API completed - Retrieved ${processedBlobs.length} items in ${endTime - startTime}ms`);
+  console.log(`[Server] List API completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
   return processedBlobs;
 }
 
 export async function getBlob(url: string): Promise<string> {
   const startTime = Date.now();
-  console.log(`[Server] Initiating blob content fetch from: ${url}`);
+  console.log(`[Server] Get blob request started at ${new Date(startTime).toISOString()}`);
   
   const response = await fetch(url);
   if (!response.ok) {
-    console.error('[Server] Failed to fetch blob content:', response.status, response.statusText);
+    console.error(`[Server] Blob fetch failed at ${new Date().toISOString()}: ${response.status}`);
     throw new Error('Failed to fetch blob content');
   }
   
   const content = await response.text();
-  console.log('[Server] Blob content response:', {
-    status: response.status,
-    headers: Object.fromEntries(response.headers.entries()),
-    contentLength: content.length,
-    preview: content.slice(0, 100) + (content.length > 100 ? '...' : ''),
-  });
-  
   const endTime = Date.now();
-  console.log(`[Server] Blob fetch completed - Content length: ${content.length} bytes, Time: ${endTime - startTime}ms`);
+  console.log(`[Server] Get blob completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
   return content;
 }
 
@@ -76,28 +67,27 @@ export async function putBlob(
   content: string | File | null
 ): Promise<BlobResult> {
   const startTime = Date.now();
-  console.log('[Server] Initiating put operation');
+  console.log(`[Server] Put operation started at ${new Date(startTime).toISOString()}`);
   
-  console.log('[Server] Listing existing blobs...');
   const { blobs } = await list();
-  console.log('[Server] List API Response:', JSON.stringify(blobs, null, 2));
-
   const existingFiles = blobs.filter(
     (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
-  console.log('[Server] Found existing files:', JSON.stringify(existingFiles, null, 2));
 
   for (const oldVersion of existingFiles) {
-    console.log('[Server] Deleting old version:', oldVersion.url);
+    const deleteStart = Date.now();
+    console.log(`[Server] Deleting old version started at ${new Date(deleteStart).toISOString()}`);
     await del(oldVersion.url);
+    console.log(`[Server] Delete completed at ${new Date().toISOString()}`);
   }
 
   const isFolder = pathname.endsWith('/');
   if (isFolder) {
-    console.log('[Server] Creating folder:', pathname);
+    const folderStart = Date.now();
+    console.log(`[Server] Folder creation started at ${new Date(folderStart).toISOString()}`);
     const result = await createFolder(pathname);
-    const endTime = Date.now();
-    console.log(`[Server] Folder creation completed in ${endTime - startTime}ms`);
+    const folderEnd = Date.now();
+    console.log(`[Server] Folder creation completed at ${new Date(folderEnd).toISOString()} (${folderEnd - folderStart}ms)`);
     return {
       type: 'folder',
       url: result.url,
@@ -105,12 +95,8 @@ export async function putBlob(
   }
 
   content = handleEmptyContent(content, pathname);
-
-  console.log('[Server] Calling put API with:', {
-    pathname,
-    contentType: content instanceof File ? content.type : typeof content,
-    isFolder,
-  });
+  const putStart = Date.now();
+  console.log(`[Server] Put request started at ${new Date(putStart).toISOString()}`);
 
   const result = await put(pathname, content, {
     access: 'public',
@@ -118,8 +104,7 @@ export async function putBlob(
   });
   
   const endTime = Date.now();
-  console.log('[Server] Put API Response:', JSON.stringify(result, null, 2));
-  console.log(`[Server] Put operation completed in ${endTime - startTime}ms`);
+  console.log(`[Server] Put operation completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
   
   return {
     type: 'file',
@@ -130,10 +115,10 @@ export async function putBlob(
 
 export async function deleteBlob(url: string) {
   const startTime = Date.now();
-  console.log(`[Server] Initiating delete API request for: ${url}`);
+  console.log(`[Server] Delete request started at ${new Date(startTime).toISOString()}`);
   
   await del(url);
   
   const endTime = Date.now();
-  console.log(`[Server] Delete API completed - Time: ${endTime - startTime}ms`);
+  console.log(`[Server] Delete completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
 }
