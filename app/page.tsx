@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
-import { useFileOperations } from '../hooks/useFileOperations';
+import { useState, useCallback, useEffect } from 'react';
 import Split from 'react-split';
-
-import FileExplorer from '../components/FileExplorer';
-import FileEditor from '../components/FileEditor';
-import CreateForm from '../components/CreateForm';
+import FileExplorer from '@/components/FileExplorer';
+import CreateForm from '@/components/CreateForm';
+import FileEditor from '@/components/FileEditor';
+import { useFileOperations } from '@/hooks/useFileOperations';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -15,11 +15,11 @@ export default function Home() {
     fileContent,
     isFileTreeLoading,
     isFileContentLoading,
+    deletingFiles,
     fetchFiles,
     handleFileSelect,
     handleFileSave,
     handleFileDelete,
-    handleFolderDelete,
   } = useFileOperations();
 
   const [initialPath, setInitialPath] = useState<string>();
@@ -44,16 +44,25 @@ export default function Home() {
           gutterSize={4}
           snapOffset={30}
         >
-          <div className="h-full overflow-auto pr-2">
-            <FileExplorer
-              files={files}
-              onFileSelect={handleFileSelect}
-              onFileDelete={handleFileDelete}
-              onFolderDelete={handleFolderDelete}
-              onAddDirectory={handleAddDirectory}
-              isLoading={isFileTreeLoading}
-              selectedFile={selectedFile}
-            />
+          <div className="flex flex-col h-full">
+            <div className="p-4 space-y-4">
+              <div className="flex items-center">
+                <h2 className="text-lg font-semibold">Files</h2>
+                {deletingFiles.size > 0 && (
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+              <div className="h-full overflow-auto pr-2">
+                <FileExplorer
+                  files={files}
+                  onFileSelect={handleFileSelect}
+                  onFileDelete={handleFileDelete}
+                  onAddDirectory={handleAddDirectory}
+                  isLoading={isFileTreeLoading}
+                  selectedFile={selectedFile}
+                />
+              </div>
+            </div>
           </div>
           <div className="h-full overflow-auto pl-6 pt-4">
             <div className="space-y-4">
