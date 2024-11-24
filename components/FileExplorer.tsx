@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { FileIcon, FolderIcon, FolderOpenIcon } from 'lucide-react';
+import { FileIcon, FolderIcon, FolderOpenIcon, TrashIcon } from 'lucide-react';
 import { TreeView } from './ui/tree-view';
+import { Button } from '@/components/ui/button';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { BlobFile, ItemToDelete, TreeDataItem } from '@/types';
 import { useFileTree } from '@/hooks/useFileTree';
-import { FileAction, DirectoryAction } from '@/components/ui/tree-actions';
 
 interface FileExplorerProps {
   files: BlobFile[];
@@ -65,18 +65,6 @@ export default function FileExplorer({
       onAddDirectory(directoryPath);
       setShouldClearSelection(true);
     },
-    renderFileActions: (file) => (
-      <FileAction onDelete={() => handleDeleteClick(file)} />
-    ),
-    renderDirectoryActions: (path) => (
-      <DirectoryAction
-        onDelete={() => handleFolderDeleteClick(path)}
-        onAdd={() => {
-          onAddDirectory(path);
-          setShouldClearSelection(true);
-        }}
-      />
-    ),
   });
 
   const handleSelectChange = useCallback(
