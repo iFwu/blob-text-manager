@@ -23,3 +23,16 @@ export interface BlobFile {
   uploadedAt: string;
   isDirectory: boolean;
 }
+
+export type BlobFileResult = {
+  type: 'file';
+  url: string;
+  downloadUrl: string;
+};
+
+export type BlobFolderResult = {
+  type: 'folder';
+  url: string;
+};
+
+export type BlobResult = BlobFileResult | BlobFolderResult;

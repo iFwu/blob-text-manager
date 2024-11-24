@@ -5,7 +5,6 @@ import { BlobFile, TreeDataItem } from '@/types';
 interface UseFileTreeProps {
   files: BlobFile[];
   handleDeleteClick: (file: BlobFile) => void;
-  handleFolderDeleteClick: (folderPath: string) => void;
   onFileSelect: (file: BlobFile | null) => void;
   onAddDirectory: (directoryPath: string) => void;
   renderFileActions: (file: BlobFile) => React.ReactNode;

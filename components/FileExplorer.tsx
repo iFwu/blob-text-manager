@@ -1,18 +1,17 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FileIcon, FolderIcon } from 'lucide-react';
 import { TreeView } from './ui/tree-view';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
-import { BlobFile, ItemToDelete, TreeDataItem } from '@/types';
+import { BlobFile, TreeDataItem } from '@/types';
 import { useFileTree } from '@/hooks/useFileTree';
 import { DirectoryAction, FileAction } from './ui/tree-actions';
+import { FileIcon, FolderIcon } from 'lucide-react';
 
 interface FileExplorerProps {
   files: BlobFile[];
   onFileSelect: (file: BlobFile | null) => void;
   onFileDelete: (file: BlobFile) => void;
-  onFolderDelete: (folderPath: string) => void;
   onAddDirectory: (directoryPath: string) => void;
   isLoading: boolean;
   selectedFile: BlobFile | null;
@@ -22,54 +21,48 @@ export default function FileExplorer({
   files,
   onFileSelect,
   onFileDelete,
-  onFolderDelete,
   onAddDirectory,
   isLoading,
   selectedFile,
 }: FileExplorerProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<BlobFile | null>(null);
 
   const handleDeleteClick = useCallback((file: BlobFile) => {
-    setItemToDelete({ type: 'file', item: file });
-    setIsDeleteDialogOpen(true);
-  }, []);
-
-  const handleFolderDeleteClick = useCallback((folderPath: string) => {
-    setItemToDelete({ type: 'folder', item: folderPath });
+    setItemToDelete(file);
     setIsDeleteDialogOpen(true);
   }, []);
 
   const handleConfirmDelete = useCallback(() => {
     if (itemToDelete) {
-      if (itemToDelete.type === 'file') {
-        onFileDelete(itemToDelete.item as BlobFile);
-      } else {
-        onFolderDelete(itemToDelete.item as string);
-      }
+      onFileDelete(itemToDelete);
     }
     setIsDeleteDialogOpen(false);
     setItemToDelete(null);
-  }, [itemToDelete, onFileDelete, onFolderDelete]);
+  }, [itemToDelete, onFileDelete]);
 
   const { treeData } = useFileTree({
     files,
     handleDeleteClick,
-    handleFolderDeleteClick,
-    onFileSelect: (file) => {
-      onFileSelect(file);
-    },
+    onFileSelect,
     onAddDirectory,
     renderFileActions: (file) => (
-      <FileAction onDelete={() => handleDeleteClick(file)} />
+      <div className="flex items-center">
+        <FileAction onDelete={() => handleDeleteClick(file)} />
+      </div>
     ),
-    renderDirectoryActions: (path) => (
-      <DirectoryAction
-        onDelete={() => handleFolderDeleteClick(path)}
-        onAdd={() => onAddDirectory(path)}
-        onFileSelect={onFileSelect}
-      />
-    ),
+    renderDirectoryActions: (path) => {
+      const dirFile = files.find((f) => f.pathname === path + '/');
+      return (
+        <div className="flex items-center">
+          <DirectoryAction
+            onDelete={() => dirFile && handleDeleteClick(dirFile)}
+            onAdd={() => onAddDirectory(path)}
+            onFileSelect={onFileSelect}
+          />
+        </div>
+      );
+    },
   });
 
   const handleSelectChange = useCallback(
@@ -87,10 +80,9 @@ export default function FileExplorer({
   );
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Files</h2>
+    <div className="h-full">
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <div>Loading...</div>
       ) : (
         <TreeView
           data={treeData}
@@ -105,7 +97,7 @@ export default function FileExplorer({
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
-        itemType={itemToDelete?.type || null}
+        itemType={itemToDelete ? (itemToDelete.isDirectory ? 'folder' : 'file') : null}
       />
     </div>
   );
