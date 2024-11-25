@@ -32,6 +32,8 @@ export function DirectoryAction({ onDelete, onAdd, onFileSelect }: DirectoryActi
       <Button
         variant="ghost"
         size="icon"
+        title="Create File"
+        aria-label="Create file in folder"
         className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
         onClick={(e) => {
           e.stopPropagation();

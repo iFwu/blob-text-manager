@@ -57,7 +57,7 @@ export default function FileExplorer({
         <div className="flex items-center">
           <DirectoryAction
             onDelete={() => dirFile && handleDeleteClick(dirFile)}
-            onAdd={() => onSetCreateTarget(path)}
+            onAdd={() => onSetCreateTarget(path + '/')}
             onFileSelect={onFileSelect}
           />
         </div>

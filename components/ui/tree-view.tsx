@@ -87,17 +87,24 @@ export function TreeView({
   ) => {
     const isExpanded = expandedItemsRef.current.has(item.id);
     const isDirectory = Array.isArray(item.children);
-    // empty directories are treated as nodes
+    const isSelected = activeItemId === item.id;
     const IconComponent = item.icon || (isDirectory ? defaultNodeIcon : defaultLeafIcon);
 
     return (
-      <div key={item.id} className="relative group">
+      <div 
+        key={item.id} 
+        className="relative group"
+        role="treeitem"
+        aria-expanded={isDirectory ? isExpanded : undefined}
+        aria-selected={isSelected}
+        aria-level={level + 1}
+        data-type={isDirectory ? "directory" : "file"}
+      >
         {/* Indent guides */}
         {level > 0 && (
           <div className="absolute left-0 top-0 bottom-0">
             {Array.from({ length: level }).map((_, i) => {
               const isParentLast = parentIsLast[i];
-              // Don't render the line for last items of last parents
               if (isParentLast) return null;
               
               return (
@@ -121,7 +128,7 @@ export function TreeView({
         <div
           className={cn(
             'flex items-center py-1 px-2 cursor-pointer hover:bg-accent/50 rounded-md relative',
-            activeItemId === item.id && 'bg-accent text-accent-foreground'
+            isSelected && 'bg-accent text-accent-foreground'
           )}
           style={{
             marginLeft: level > 0 ? `${level * INDENT_WIDTH}px` : undefined,
@@ -129,6 +136,7 @@ export function TreeView({
           onClick={() => handleItemClick(item)}
           onMouseEnter={() => setHoveredItemId(item.id)}
           onMouseLeave={() => setHoveredItemId(null)}
+          role="presentation"
         >
           <div className="w-4 mr-1 flex-shrink-0">
             {isDirectory && (
@@ -137,6 +145,7 @@ export function TreeView({
                 size="icon"
                 className="h-4 w-4 p-0"
                 onClick={(e) => toggleExpand(item.id, e)}
+                aria-label={isExpanded ? "Collapse folder" : "Expand folder"}
               >
                 {isExpanded ? (
                   <ChevronDown className="h-3 w-3" />
@@ -152,16 +161,28 @@ export function TreeView({
                 'h-4 w-4 mr-2 shrink-0',
                 isExpanded && item.openIcon ? 'hidden' : 'inline-block'
               )}
+              aria-hidden="true"
             />
           )}
-          {isExpanded && item.openIcon && <item.openIcon className="h-4 w-4 mr-2 shrink-0" />}
-          <span className="text-sm truncate flex-grow">{item.name}</span>
-          <div className="w-6 h-6 flex items-center justify-center">
+          {isExpanded && item.openIcon && (
+            <item.openIcon 
+              className="h-4 w-4 mr-2 shrink-0" 
+              aria-hidden="true"
+            />
+          )}
+          <span 
+            className="text-sm truncate flex-grow"
+          >
+            {item.name}
+          </span>
+          <div 
+            className="w-6 h-6 flex items-center justify-center"
+          >
             {item.actions && hoveredItemId === item.id && item.actions}
           </div>
         </div>
         {isDirectory && isExpanded && (
-          <div>
+          <div role="group" aria-label={`${item.name} contents`}>
             {item.children?.map((child, index) => 
               renderTreeItem(
                 child,
@@ -190,8 +211,15 @@ export function TreeView({
   }, []);
 
   return (
-    <div className={cn('space-y-1', className)} {...props}>
-      {data.map((item, index) => renderTreeItem(item, 0, index === data.length - 1, []))}
+    <div 
+      className={cn('space-y-1', className)} 
+      role="tree"
+      aria-label="File explorer"
+      {...props}
+    >
+      {data.length > 0 ? (
+        data.map((item, index) => renderTreeItem(item, 0, index === data.length - 1, []))
+      ) : null}
     </div>
   );
 }
