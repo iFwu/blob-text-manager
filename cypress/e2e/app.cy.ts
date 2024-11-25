@@ -9,9 +9,19 @@ describe('Navigation', () => {
       }
     })
 
+    // 拦截所有请求
+    cy.intercept('**', (req) => {
+      console.log('Debug: All Requests:', {
+        url: req.url,
+        method: req.method,
+        headers: req.headers,
+        body: req.body
+      })
+    }).as('allRequests')
+
     // Mock Vercel Blob API 请求
     cy.intercept('GET', '**/blob.vercel-storage.com/**', (req) => {
-      console.log('Debug: Intercepted Request', {
+      console.log('Debug: Intercepted Blob Request', {
         url: req.url,
         method: req.method,
         headers: req.headers
@@ -56,6 +66,14 @@ describe('Navigation', () => {
         response: interception.response
       })
       expect(interception.response?.statusCode).to.equal(200)
+    })
+
+    // 打印所有请求的信息
+    cy.get('@allRequests.all').then((interceptions) => {
+      console.log('Debug: All Requests Summary:', {
+        count: interceptions.length,
+        urls: interceptions.map((i: any) => i.request.url)
+      })
     })
   })
 })
