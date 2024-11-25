@@ -178,4 +178,40 @@ describe('File Creation Tests', () => {
       .type('{shift}{enter}');
     cy.contains('File or folder already exists').should('be.visible');
   });
+
+  it.only('[FC-06] should respect current directory when creating file with path', () => {
+
+    // 添加 other 文件夹
+    cy.get("input[placeholder*='Enter name']").type('folder/other/{enter}');
+
+    // 点击 folder 的按钮，设置当前目录
+    cy.contains('[role="presentation"]', 'folder')
+      .realHover()
+      .find('button[aria-label="Create file in folder"]')
+      .click();
+
+    // 验证当前目录前缀显示正确
+    cy.get('[aria-label="current directory"]').should('have.text', 'folder/');
+
+    // 尝试在输入框中输入带有其他目录的路径
+    cy.get("input[placeholder*='Enter name']").type('other/test.txt{enter}');
+
+    // 等待文件创建请求完成
+    cy.wait('@putFile').then((interception) => {
+      // 验证实际创建的文件路径是在当前目录下
+      expect(interception.request.url).to.include('folder/other/test.txt');
+    });
+
+    // 验证文件创建成功并且在 other 文件夹下
+    cy.get('[role="treeitem"][data-type="file"]')
+      .contains('test.txt')
+      .parents('[role="treeitem"][data-type="directory"]')
+      .first()
+      .within(() => {
+        cy.contains('other').should('exist');
+      });
+
+    // 验证编辑器标题显示完整路径
+    cy.contains('h2', 'Editing: folder/other/test.txt').should('be.visible');
+  });
 });
