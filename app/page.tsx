@@ -20,6 +20,7 @@ export default function Home() {
     handleFileSelect,
     handleFileSave,
     handleFileDelete,
+    validateFileName,
   } = useFileOperations();
 
   const [targetPath, setTargetPath] = useState<string>();
@@ -79,6 +80,7 @@ export default function Home() {
                     : ''
                 }
                 targetPath={targetPath}
+                validateFileName={validateFileName}
               />
               <FileEditor
                 key={selectedFile?.url}

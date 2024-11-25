@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { listBlobs, getBlob, putBlob, deleteBlob } from '../app/actions';
-import { BlobFile } from '../types';
+import { BlobFile, ValidationResult } from '../types';
 
 export function useFileOperations() {
   const [files, setFiles] = useState<BlobFile[]>([]);
@@ -45,16 +45,66 @@ export function useFileOperations() {
     }
   }, []);
 
+  const validateFileName = useCallback((name: string, isDirectory: boolean): ValidationResult => {
+    if (!name) {
+      return { isValid: false, error: "Please enter a name" };
+    }
+
+    if (/[<>:"|?*\\]/.test(name)) {
+      return { isValid: false, error: "Name contains invalid characters" };
+    }
+
+    const parts = name.split('/').filter(Boolean);
+    if (parts.some(part => part === '.' || part === '..')) {
+      return { isValid: false, error: "Invalid path: cannot contain . or .." };
+    }
+
+    const baseName = parts[parts.length - 1];
+    const parentPath = parts.slice(0, -1).join('/');
+    const fullPath = name + (isDirectory ? '/' : '');
+    
+    const conflictingFile = files.find(f => {
+      const fParts = f.pathname.replace(/\/$/, '').split('/');
+      const fName = fParts[fParts.length - 1];
+      const fParent = fParts.slice(0, -1).join('/');
+      
+      return fName === baseName && fParent === parentPath;
+    });
+
+    if (conflictingFile) {
+      return { 
+        isValid: false, 
+        error: "File or folder already exists"
+      };
+    }
+
+    if (parts.length > 1) {
+      const parentDirPath = parts.slice(0, -1).join('/') + '/';
+      const parentExists = files.some(f => 
+        f.isDirectory && f.pathname === parentDirPath
+      );
+      if (!parentExists) {
+        return { isValid: false, error: "Parent directory does not exist" };
+      }
+    }
+
+    return { isValid: true, error: null };
+  }, [files]);
+
   const handleFileSave = useCallback(
     async (content: string, fileName?: string) => {
       try {
         const fileToSave = fileName || (selectedFile?.pathname ?? '');
         if (!fileToSave) {
-          console.error('No file name provided for save operation');
-          return;
+          throw new Error('No file name provided for save operation');
         }
 
         const isFolder = fileToSave.endsWith('/');
+        const validation = validateFileName(fileToSave, isFolder);
+        
+        if (!validation.isValid) {
+          throw new Error(validation.error || 'Invalid file name');
+        }
 
         const newFile: BlobFile = {
           pathname: fileToSave,
@@ -94,10 +144,10 @@ export function useFileOperations() {
           setFileContent(content);
         }
       } catch (error) {
-        console.error('Error saving file:', error);
+        throw error; // 让调用者处理错误
       }
     },
-    [selectedFile]
+    [selectedFile, validateFileName]
   );
 
   const handleFileDelete = useCallback(
@@ -160,5 +210,6 @@ export function useFileOperations() {
     handleFileSelect,
     handleFileSave,
     handleFileDelete,
+    validateFileName,
   };
 }

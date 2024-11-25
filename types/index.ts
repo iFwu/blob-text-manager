@@ -36,3 +36,8 @@ export type BlobFolderResult = {
 };
 
 export type BlobResult = BlobFileResult | BlobFolderResult;
+
+export type ValidationResult = {
+  isValid: boolean;
+  error: string | null;
+};

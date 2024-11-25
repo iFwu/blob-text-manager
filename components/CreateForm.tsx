@@ -3,14 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusIcon, FolderPlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ValidationResult } from '@/types';
 
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
   currentDirectory: string;
   targetPath?: string;
+  validateFileName: (name: string, isDirectory: boolean) => ValidationResult;
 }
 
-const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, targetPath }: CreateFormProps) {
+const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, targetPath, validateFileName }: CreateFormProps) {
   const [newName, setNewName] = useState('');
   const [prefixWidth, setPrefixWidth] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -39,19 +41,25 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, ta
       setError("Please enter a name");
       return;
     }
-    if (/[<>]/.test(newName)) {
-      setError("Name contains invalid characters");
+
+    const fileName = isDirectory ? `${newName}/` : newName;
+    
+    const fullPath = fileName.includes('/') ? fileName : 
+      effectiveDirectory ? 
+        `${effectiveDirectory}${fileName}`.replace(/\/+/g, '/') : 
+        fileName;
+    
+    const validation = validateFileName(fullPath, isDirectory);
+    if (!validation.isValid) {
+      setError(validation.error);
       return;
     }
-    
-    const fileName = isDirectory ? `${newName}/` : newName;
-    const cleanDirectory = effectiveDirectory.endsWith('/') ? effectiveDirectory.slice(0, -1) : effectiveDirectory;
-    const fullPath = cleanDirectory ? `${cleanDirectory}/${fileName}` : fileName;
+
     onCreateFile(fullPath);
     setNewName('');
     setError(null);
     inputRef.current?.focus();
-  }, [newName, effectiveDirectory, onCreateFile]);
+  }, [newName, effectiveDirectory, onCreateFile, validateFileName]);
 
   const handleFormSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
@@ -71,6 +79,7 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, ta
         {effectiveDirectory && (
           <span
             ref={prefixRef}
+            aria-label="current directory"
             className={cn(
               'inline-flex items-center absolute left-0 top-0 bottom-0',
               'text-sm text-muted-foreground bg-muted',
