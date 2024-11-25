@@ -1,12 +1,19 @@
 import CreateForm from '@/components/CreateForm'
 
 describe('CreateForm', () => {
+  // 添加一个模拟的验证函数
+  const mockValidateFileName = (name: string) => ({
+    isValid: !name.includes('<'),
+    error: name.includes('<') ? 'Name contains invalid characters' : null
+  });
+
   it('renders with target path', () => {
     cy.mount(
       <CreateForm
         onCreateFile={cy.stub().as('onCreateFile')}
         currentDirectory="test/"
         targetPath="test/"
+        validateFileName={mockValidateFileName}
       />
     )
 
@@ -20,6 +27,7 @@ describe('CreateForm', () => {
         onCreateFile={cy.stub().as('onCreateFile')}
         currentDirectory="test/"
         targetPath=""
+        validateFileName={mockValidateFileName}
       />
     )
 
@@ -33,6 +41,7 @@ describe('CreateForm', () => {
         onCreateFile={cy.stub().as('onCreateFile')}
         currentDirectory="test/"
         targetPath=""
+        validateFileName={mockValidateFileName}
       />
     )
 
@@ -47,6 +56,7 @@ describe('CreateForm', () => {
         onCreateFile={onCreateFile}
         currentDirectory=""
         targetPath=""
+        validateFileName={mockValidateFileName}
       />
     )
 
