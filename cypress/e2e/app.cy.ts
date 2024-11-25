@@ -1,79 +1,88 @@
 describe('Navigation', () => {
   beforeEach(() => {
-    // 打印环境变量
-    cy.task('log', {
-      message: 'Debug: Environment Variables',
-      env: {
-        NODE_ENV: Cypress.env('NODE_ENV'),
-        NEXT_PUBLIC_IS_TEST: Cypress.env('NEXT_PUBLIC_IS_TEST'),
+    cy.visit('http://localhost:3000')
+    cy.window().then((win) => {
+      const debugDiv = win.document.createElement('div')
+      debugDiv.id = 'debug-output'
+      debugDiv.style.cssText = 'position:fixed;top:0;right:0;width:800px;height:100vh;background:rgba(0,0,0,0.8);color:white;padding:20px;overflow:auto;z-index:9999;'
+      win.document.body.appendChild(debugDiv)
+      
+      const originalLog = win.console.log
+      win.console.log = (...args: any[]) => {
+        originalLog.apply(console, args)
+        const debugDiv = win.document.getElementById('debug-output')
+        if (debugDiv) {
+          const simplifyRequest = (req: any) => {
+            if (req?.headers) {
+              const { host, authorization } = req.headers
+              req.headers = { host, authorization }
+            }
+            return req
+          }
+          
+          const simplified = args.map(arg => {
+            if (typeof arg === 'object' && arg !== null) {
+              if ('headers' in arg) return simplifyRequest(arg)
+              if (Array.isArray(arg)) return arg.map(simplifyRequest)
+            }
+            return arg
+          })
+          
+          debugDiv.innerHTML = `<pre>${JSON.stringify(simplified, null, 1)}</pre><hr/>` + debugDiv.innerHTML
+        }
       }
     })
 
     // 拦截所有请求
     cy.intercept('**', (req) => {
-      console.log('Debug: All Requests:', {
-        url: req.url,
-        method: req.method,
-        headers: req.headers,
-        body: req.body
+      cy.window().then((win) => {
+        win.console.log('Request:', {
+          url: req.url,
+          method: req.method
+        })
       })
     }).as('allRequests')
 
     // Mock Vercel Blob API 请求
-    cy.intercept('GET', '**/blob.vercel-storage.com/**', (req) => {
-      console.log('Debug: Intercepted Blob Request', {
-        url: req.url,
-        method: req.method,
-        headers: req.headers
-      })
-      req.reply({
-        statusCode: 200,
-        body: []
-      })
+    cy.intercept({
+      method: 'GET',
+      url: /.*blob.*vercel.*storage.*com.*/,
+    }, {
+      statusCode: 200,
+      body: []
     }).as('blobRequests')
 
-    cy.task('log', {
-      message: 'Debug: Intercept Setup Complete'
+    // 环境变量
+    cy.window().then((win) => {
+      win.console.log('Environment:', {
+        NODE_ENV: Cypress.env('NODE_ENV'),
+        NEXT_PUBLIC_IS_TEST: Cypress.env('NEXT_PUBLIC_IS_TEST'),
+        windowEnv: (win as any).process?.env
+      })
     })
   })
 
   it('should navigate to the home page', () => {
-    cy.task('log', {
-      message: 'Debug: Starting Navigation Test'
-    })
-
-    cy.visit('http://localhost:3000')
-    cy.url().should('include', '/')
-    
-    cy.task('log', {
-      message: 'Debug: Page Loaded'
-    })
-    
-    // 等待页面内容加载
     cy.get('h1').should('contain', 'Blob Text Manager')
     cy.get('.flex.items-center').should('exist')
     
-    cy.task('log', {
-      message: 'Debug: UI Elements Verified'
-    })
-    
-    // 等待所有 blob 请求完成
-    cy.wait('@blobRequests', { timeout: 10000 })
-    
-    // 打印响应信息
-    cy.get('@blobRequests').then((interception: any) => {
-      console.log('Debug: Blob Request Complete', {
-        response: interception.response
+    cy.get('@allRequests.all').then((interceptions) => {
+      cy.window().then((win) => {
+        win.console.log('Requests:', 
+          interceptions.map((i: any) => ({
+            url: i.request.url
+          }))
+        )
       })
-      expect(interception.response?.statusCode).to.equal(200)
     })
 
-    // 打印所有请求的信息
-    cy.get('@allRequests.all').then((interceptions) => {
-      console.log('Debug: All Requests Summary:', {
-        count: interceptions.length,
-        urls: interceptions.map((i: any) => i.request.url)
+    cy.wait('@blobRequests', { timeout: 5000 }).then((interception) => {
+      cy.window().then((win) => {
+        win.console.log('Blob Response:', {
+          status: interception.response?.statusCode
+        })
       })
+      expect(interception.response?.statusCode).to.equal(200)
     })
   })
 })

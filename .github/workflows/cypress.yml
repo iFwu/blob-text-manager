@@ -48,12 +48,14 @@ jobs:
         env:
           NODE_ENV: test
           NEXT_PUBLIC_IS_TEST: "true"
+          NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN: "vercel_blob_test_token"
         run: pnpm build
 
       - name: Run E2E Tests
         env:
           NODE_ENV: test
           NEXT_PUBLIC_IS_TEST: "true"
+          NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN: "vercel_blob_test_token"
         run: pnpm e2e:ci
 
       - name: Upload Screenshots
