@@ -36,3 +36,12 @@ yarn-error.log*
 next-env.d.ts
 .aider*
 .env
+
+# Cypress
+cypress/screenshots/
+cypress/videos/
+cypress/reports/
+cypress/downloads/
+cypress/fixtures/examples/
+.cypress-coverage/
+cypress.env.json
