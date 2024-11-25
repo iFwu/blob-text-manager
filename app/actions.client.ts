@@ -1,25 +1,36 @@
 /**
  * Client-side implementation of blob management actions.
  * THIS IS FOR TESTING PURPOSES ONLY!
- * 
+ *
  * This implementation allows intercepting API calls in the browser during tests.
  * DO NOT USE IN PRODUCTION as it would expose your BLOB token.
- * 
- * The BLOB token should only be exposed during local debugging if absolutely 
+ *
+ * The BLOB token should only be exposed during local debugging if absolutely
  * necessary. In production, always use the server-side implementation.
  */
 
 'use client';
 
 import { list, put, del, createFolder } from '@vercel/blob';
-import type { BlobFile, BlobResult, BlobFileResult, BlobFolderResult, BlobOperations } from '../types';
+import type {
+  BlobFile,
+  BlobResult,
+  BlobFileResult,
+  BlobFolderResult,
+  BlobOperations,
+} from '../types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
 
-function handleEmptyContent(content: string | File | null, pathname: string): string | File {
+function handleEmptyContent(
+  content: string | File | null,
+  pathname: string
+): string | File {
   if (typeof content === 'string') {
-    return content.trim() === '' ? ZERO_WIDTH_SPACE : content.replace(/^\u200B/, '');
+    return content.trim() === ''
+      ? ZERO_WIDTH_SPACE
+      : content.replace(/^\u200B/, '');
   } else if (content instanceof File && content.size === 0) {
     return new File([ZERO_WIDTH_SPACE], pathname, { type: content.type });
   }
@@ -34,9 +45,15 @@ export async function listBlobs(): Promise<BlobFile[]> {
   const fileMap = new Map<string, any>();
 
   blobs.forEach((blob) => {
-    const pathWithoutSuffix = blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1');
+    const pathWithoutSuffix = blob.pathname.replace(
+      /-[a-zA-Z0-9]{21}(\.[^.]+)?$/,
+      '$1'
+    );
     const existing = fileMap.get(pathWithoutSuffix);
-    if (!existing || new Date(blob.uploadedAt) > new Date(existing.uploadedAt)) {
+    if (
+      !existing ||
+      new Date(blob.uploadedAt) > new Date(existing.uploadedAt)
+    ) {
       fileMap.set(pathWithoutSuffix, blob);
     }
   });
@@ -65,11 +82,15 @@ export async function putBlob(
 ): Promise<BlobResult> {
   const { blobs } = await list({ token });
   const existingFiles = blobs.filter(
-    (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
+    (blob) =>
+      blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
 
   if (existingFiles.length > 0) {
-    await del(existingFiles.map(file => file.url), { token });
+    await del(
+      existingFiles.map((file) => file.url),
+      { token }
+    );
   }
 
   const isFolder = pathname.endsWith('/');

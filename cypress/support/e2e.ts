@@ -14,9 +14,9 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import "./commands";
-import { blobStorageMock } from "./blobStorageMock";
-import "cypress-real-events";
+import './commands';
+import { blobStorageMock } from './blobStorageMock';
+import 'cypress-real-events';
 
 // Add to global scope
 (global as any).blobStorageMock = blobStorageMock;

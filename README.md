@@ -5,6 +5,7 @@ A specialized file management application built on Vercel Blob Storage. This too
 ## Features
 
 - 📁 File Management
+
   - Create, edit, and organize files and folders
   - Hierarchical directory structure
   - Intuitive file explorer interface
@@ -12,6 +13,7 @@ A specialized file management application built on Vercel Blob Storage. This too
   - Multi-file operations
 
 - 🎯 Core Features
+
   - Tree-style file explorer
   - Real-time file operations
   - Directory management
@@ -37,12 +39,14 @@ A specialized file management application built on Vercel Blob Storage. This too
 ### Environment Setup
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/vercel-blob-manager.git
 cd vercel-blob-manager
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
@@ -50,6 +54,7 @@ pnpm install
 3. Set up environment variables:
    - Copy `.env.example` to `.env.local` for development
    - Add your Vercel Blob credentials
+
 ```bash
 cp .env.example .env.local
 ```
@@ -57,6 +62,7 @@ cp .env.example .env.local
 4. Set up test environment:
    - Copy `.env.test.example` to `.env.test.local`
    - Add your test credentials (uses client-side API calls)
+
 ```bash
 cp .env.test.example .env.test.local
 ```
@@ -64,6 +70,7 @@ cp .env.test.example .env.test.local
 ### Development
 
 Run the development server:
+
 ```bash
 pnpm dev
 ```
@@ -73,16 +80,19 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 ### Testing
 
 Run E2E tests in interactive mode:
+
 ```bash
 pnpm e2e
 ```
 
 Run E2E tests in headless mode:
+
 ```bash
 pnpm e2e:headless
 ```
 
 Run component tests:
+
 ```bash
 pnpm component
 ```

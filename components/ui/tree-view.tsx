@@ -74,31 +74,32 @@ export function TreeView({
       toggleExpand(item.id);
       return;
     }
-    
+
     handleSelectChange(item);
     item.onClick?.();
   };
 
   const renderTreeItem = (
-    item: TreeDataItem, 
-    level: number = 0, 
+    item: TreeDataItem,
+    level: number = 0,
     isLastItem: boolean = false,
     parentIsLast: boolean[] = []
   ) => {
     const isExpanded = expandedItemsRef.current.has(item.id);
     const isDirectory = Array.isArray(item.children);
     const isSelected = activeItemId === item.id;
-    const IconComponent = item.icon || (isDirectory ? defaultNodeIcon : defaultLeafIcon);
+    const IconComponent =
+      item.icon || (isDirectory ? defaultNodeIcon : defaultLeafIcon);
 
     return (
-      <div 
-        key={item.id} 
+      <div
+        key={item.id}
         className="relative group"
         role="treeitem"
         aria-expanded={isDirectory ? isExpanded : undefined}
         aria-selected={isSelected}
         aria-level={level + 1}
-        data-type={isDirectory ? "directory" : "file"}
+        data-type={isDirectory ? 'directory' : 'file'}
       >
         {/* Indent guides */}
         {level > 0 && (
@@ -106,14 +107,11 @@ export function TreeView({
             {Array.from({ length: level }).map((_, i) => {
               const isParentLast = parentIsLast[i];
               if (isParentLast) return null;
-              
+
               return (
                 <div
                   key={i}
-                  className={cn(
-                    "absolute w-px bg-border",
-                    "left-[12px]"
-                  )}
+                  className={cn('absolute w-px bg-border', 'left-[12px]')}
                   style={{
                     left: `${(i + 1) * INDENT_WIDTH - 1}px`,
                     top: 0,
@@ -145,7 +143,7 @@ export function TreeView({
                 size="icon"
                 className="h-4 w-4 p-0"
                 onClick={(e) => toggleExpand(item.id, e)}
-                aria-label={isExpanded ? "Collapse folder" : "Expand folder"}
+                aria-label={isExpanded ? 'Collapse folder' : 'Expand folder'}
               >
                 {isExpanded ? (
                   <ChevronDown className="h-3 w-3" />
@@ -165,25 +163,19 @@ export function TreeView({
             />
           )}
           {isExpanded && item.openIcon && (
-            <item.openIcon 
-              className="h-4 w-4 mr-2 shrink-0" 
+            <item.openIcon
+              className="h-4 w-4 mr-2 shrink-0"
               aria-hidden="true"
             />
           )}
-          <span 
-            className="text-sm truncate flex-grow"
-          >
-            {item.name}
-          </span>
-          <div 
-            className="w-6 h-6 flex items-center justify-center"
-          >
+          <span className="text-sm truncate flex-grow">{item.name}</span>
+          <div className="w-6 h-6 flex items-center justify-center">
             {item.actions && hoveredItemId === item.id && item.actions}
           </div>
         </div>
         {isDirectory && isExpanded && (
           <div role="group" aria-label={`${item.name} contents`}>
-            {item.children?.map((child, index) => 
+            {item.children?.map((child, index) =>
               renderTreeItem(
                 child,
                 level + 1,
@@ -211,15 +203,17 @@ export function TreeView({
   }, []);
 
   return (
-    <div 
-      className={cn('space-y-1', className)} 
+    <div
+      className={cn('space-y-1', className)}
       role="tree"
       aria-label="File explorer"
       {...props}
     >
-      {data.length > 0 ? (
-        data.map((item, index) => renderTreeItem(item, 0, index === data.length - 1, []))
-      ) : null}
+      {data.length > 0
+        ? data.map((item, index) =>
+            renderTreeItem(item, 0, index === data.length - 1, [])
+          )
+        : null}
     </div>
   );
 }

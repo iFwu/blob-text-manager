@@ -1,5 +1,5 @@
-import FileExplorer from '@/components/FileExplorer'
-import { BlobFile } from '@/types'
+import FileExplorer from '@/components/FileExplorer';
+import { BlobFile } from '@/types';
 
 describe('FileExplorer', () => {
   const mockFiles: BlobFile[] = [
@@ -7,7 +7,7 @@ describe('FileExplorer', () => {
       pathname: 'folder/',
       size: 0,
       uploadedAt: new Date().toISOString(),
-      isDirectory: true
+      isDirectory: true,
     },
     {
       pathname: 'folder/test.txt',
@@ -15,9 +15,9 @@ describe('FileExplorer', () => {
       downloadUrl: 'https://example.com/test.txt',
       size: 100,
       uploadedAt: new Date().toISOString(),
-      isDirectory: false
-    }
-  ]
+      isDirectory: false,
+    },
+  ];
 
   it('renders empty state', () => {
     cy.mount(
@@ -29,8 +29,8 @@ describe('FileExplorer', () => {
         isLoading={false}
         selectedFile={null}
       />
-    )
-  })
+    );
+  });
 
   it('renders files and folders', () => {
     cy.mount(
@@ -42,17 +42,17 @@ describe('FileExplorer', () => {
         isLoading={false}
         selectedFile={null}
       />
-    )
+    );
 
     // 检查文件夹是否渲染
-    cy.contains('folder').should('exist')
-    
+    cy.contains('folder').should('exist');
+
     // 展开文件夹
-    cy.contains('folder').click()
-    
+    cy.contains('folder').click();
+
     // 检查文件是否渲染
-    cy.contains('test.txt').should('exist')
-  })
+    cy.contains('test.txt').should('exist');
+  });
 
   it('handles file selection', () => {
     cy.mount(
@@ -64,17 +64,17 @@ describe('FileExplorer', () => {
         isLoading={false}
         selectedFile={null}
       />
-    )
+    );
 
     // 展开文件夹
-    cy.contains('folder').click()
-    
+    cy.contains('folder').click();
+
     // 点击文件
-    cy.contains('test.txt').click()
-    
+    cy.contains('test.txt').click();
+
     // 验证选择回调
-    cy.get('@onFileSelect').should('have.been.calledWith', mockFiles[1])
-  })
+    cy.get('@onFileSelect').should('have.been.calledWith', mockFiles[1]);
+  });
 
   it('shows loading state', () => {
     cy.mount(
@@ -86,8 +86,8 @@ describe('FileExplorer', () => {
         isLoading={true}
         selectedFile={null}
       />
-    )
+    );
 
-    cy.contains('Loading...').should('exist')
-  })
-}) 
+    cy.contains('Loading...').should('exist');
+  });
+});

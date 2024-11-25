@@ -11,7 +11,12 @@ interface FileEditorProps {
 
 const ZERO_WIDTH_SPACE = '\u200B';
 
-export default function FileEditor({ file, content, onSave, isLoading = false }: FileEditorProps) {
+export default function FileEditor({
+  file,
+  content,
+  onSave,
+  isLoading = false,
+}: FileEditorProps) {
   const [editedContent, setEditedContent] = useState(content);
 
   useEffect(() => {
@@ -19,7 +24,8 @@ export default function FileEditor({ file, content, onSave, isLoading = false }:
   }, [content]);
 
   const handleSave = () => {
-    const contentToSave = editedContent.trim() === '' ? ZERO_WIDTH_SPACE : editedContent;
+    const contentToSave =
+      editedContent.trim() === '' ? ZERO_WIDTH_SPACE : editedContent;
     onSave(contentToSave);
   };
 
@@ -48,7 +54,10 @@ export default function FileEditor({ file, content, onSave, isLoading = false }:
           setEditedContent(e.target.value);
         }}
       />
-      <button className="bg-green-500 text-white rounded px-4 py-2" onClick={handleSave}>
+      <button
+        className="bg-green-500 text-white rounded px-4 py-2"
+        onClick={handleSave}
+      >
         Save
       </button>
     </div>

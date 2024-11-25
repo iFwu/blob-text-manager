@@ -1,4 +1,4 @@
-describe("File and Folder Deletion Tests", () => {
+describe('File and Folder Deletion Tests', () => {
   const mockFiles = [
     { pathname: 'empty-folder/', isFolder: true },
     { pathname: 'test-folder/', isFolder: true },
@@ -26,8 +26,12 @@ describe("File and Folder Deletion Tests", () => {
     // 验证文件被删除
     cy.contains('[role="treeitem"]', 'root-file.txt').should('not.exist');
     cy.wait('@deleteBlob').then((interception) => {
-      expect(interception.request.body.urls).to.be.an('array').that.has.length(1);
-      expect(interception.request.body.urls[0]).to.match(/^https:\/\/mock\.blob\.vercel-storage\.com\/root-file\.txt-[a-z0-9]+$/);
+      expect(interception.request.body.urls)
+        .to.be.an('array')
+        .that.has.length(1);
+      expect(interception.request.body.urls[0]).to.match(
+        /^https:\/\/mock\.blob\.vercel-storage\.com\/root-file\.txt-[a-z0-9]+$/
+      );
     });
 
     // 验证编辑器显示默认提示文本
@@ -50,8 +54,12 @@ describe("File and Folder Deletion Tests", () => {
     // 验证文件被删除
     cy.contains('[role="treeitem"]', 'nested.txt').should('not.exist');
     cy.wait('@deleteBlob').then((interception) => {
-      expect(interception.request.body.urls).to.be.an('array').that.has.length(1);
-      expect(interception.request.body.urls[0]).to.match(/^https:\/\/mock\.blob\.vercel-storage\.com\/test-folder\/nested\.txt-[a-z0-9]+$/);
+      expect(interception.request.body.urls)
+        .to.be.an('array')
+        .that.has.length(1);
+      expect(interception.request.body.urls[0]).to.match(
+        /^https:\/\/mock\.blob\.vercel-storage\.com\/test-folder\/nested\.txt-[a-z0-9]+$/
+      );
     });
 
     // 验证编辑器显示默认提示文本
@@ -71,8 +79,12 @@ describe("File and Folder Deletion Tests", () => {
     // 验证文件夹被删除
     cy.contains('[role="treeitem"]', 'empty-folder').should('not.exist');
     cy.wait('@deleteBlob').then((interception) => {
-      expect(interception.request.body.urls).to.be.an('array').that.has.length(1);
-      expect(interception.request.body.urls[0]).to.match(/^https:\/\/mock\.blob\.vercel-storage\.com\/empty-folder\/$/);
+      expect(interception.request.body.urls)
+        .to.be.an('array')
+        .that.has.length(1);
+      expect(interception.request.body.urls[0]).to.match(
+        /^https:\/\/mock\.blob\.vercel-storage\.com\/empty-folder\/$/
+      );
     });
 
     // 验证编辑器显示默认提示文本
@@ -93,9 +105,15 @@ describe("File and Folder Deletion Tests", () => {
     cy.contains('[role="treeitem"]', 'test-folder').should('not.exist');
     cy.contains('[role="treeitem"]', 'nested.txt').should('not.exist');
     cy.wait('@deleteBlob').then((interception) => {
-      expect(interception.request.body.urls).to.be.an('array').that.has.length(2);
-      expect(interception.request.body.urls[0]).to.match(/^https:\/\/mock\.blob\.vercel-storage\.com\/test-folder\/$/);
-      expect(interception.request.body.urls[1]).to.match(/^https:\/\/mock\.blob\.vercel-storage\.com\/test-folder\/nested\.txt-[a-z0-9]+$/);
+      expect(interception.request.body.urls)
+        .to.be.an('array')
+        .that.has.length(2);
+      expect(interception.request.body.urls[0]).to.match(
+        /^https:\/\/mock\.blob\.vercel-storage\.com\/test-folder\/$/
+      );
+      expect(interception.request.body.urls[1]).to.match(
+        /^https:\/\/mock\.blob\.vercel-storage\.com\/test-folder\/nested\.txt-[a-z0-9]+$/
+      );
     });
 
     // 删除完成后移除loading状态

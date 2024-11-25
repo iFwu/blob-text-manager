@@ -128,7 +128,7 @@ describe('Subfolder File Creation Tests', () => {
       .click();
 
     // 验证当前目录前缀显示正确
-    cy.get('[aria-label="current directory"]').should(el => {
+    cy.get('[aria-label="current directory"]').should((el) => {
       expect(el.text().trim()).to.equal('folder/');
     });
 
@@ -150,9 +150,8 @@ describe('Subfolder File Creation Tests', () => {
         cy.contains('other').should('exist');
       });
 
-
     // 验证当前目录前缀显示正确
-    cy.get('[aria-label="current directory"]').should(el => {
+    cy.get('[aria-label="current directory"]').should((el) => {
       expect(el.text().trim()).to.equal('folder/other/');
     });
 

@@ -73,7 +73,9 @@ export default function FileExplorer({
       }
 
       const normalizedId = item.id.replace(/\/+$/, '');
-      const selectedFile = files.find((file) => file.pathname.replace(/\/+$/, '') === normalizedId);
+      const selectedFile = files.find(
+        (file) => file.pathname.replace(/\/+$/, '') === normalizedId
+      );
       onFileSelect(selectedFile || null);
     },
     [files, onFileSelect]
@@ -97,7 +99,9 @@ export default function FileExplorer({
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
-        itemType={itemToDelete ? (itemToDelete.isDirectory ? 'folder' : 'file') : null}
+        itemType={
+          itemToDelete ? (itemToDelete.isDirectory ? 'folder' : 'file') : null
+        }
       />
     </div>
   );

@@ -28,7 +28,11 @@ export function FileAction({ onDelete }: FileActionProps) {
   );
 }
 
-export function DirectoryAction({ onDelete, onAdd, onFileSelect }: DirectoryActionProps) {
+export function DirectoryAction({
+  onDelete,
+  onAdd,
+  onFileSelect,
+}: DirectoryActionProps) {
   return (
     <div className="flex space-x-1">
       <Button

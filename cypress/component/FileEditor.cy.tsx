@@ -1,5 +1,5 @@
-import FileEditor from '@/components/FileEditor'
-import { BlobFile } from '@/types'
+import FileEditor from '@/components/FileEditor';
+import { BlobFile } from '@/types';
 
 describe('FileEditor', () => {
   const mockFile: BlobFile = {
@@ -8,8 +8,8 @@ describe('FileEditor', () => {
     downloadUrl: 'https://example.com/test.txt',
     size: 100,
     uploadedAt: new Date().toISOString(),
-    isDirectory: false
-  }
+    isDirectory: false,
+  };
 
   it('renders empty state', () => {
     cy.mount(
@@ -19,13 +19,13 @@ describe('FileEditor', () => {
         onSave={cy.stub().as('onSave')}
         isLoading={false}
       />
-    )
+    );
 
-    cy.contains('Select a file to edit').should('exist')
-  })
+    cy.contains('Select a file to edit').should('exist');
+  });
 
   it('renders file content', () => {
-    const content = 'Hello, World!'
+    const content = 'Hello, World!';
     cy.mount(
       <FileEditor
         file={mockFile}
@@ -33,10 +33,10 @@ describe('FileEditor', () => {
         onSave={cy.stub().as('onSave')}
         isLoading={false}
       />
-    )
+    );
 
-    cy.get('textarea').should('have.value', content)
-  })
+    cy.get('textarea').should('have.value', content);
+  });
 
   it('handles content changes', () => {
     cy.mount(
@@ -46,17 +46,17 @@ describe('FileEditor', () => {
         onSave={cy.stub().as('onSave')}
         isLoading={false}
       />
-    )
+    );
 
-    const newContent = 'Updated content'
-    cy.get('textarea').clear().type(newContent)
-    
+    const newContent = 'Updated content';
+    cy.get('textarea').clear().type(newContent);
+
     // 触发保存
-    cy.get('button').contains('Save').click()
-    
+    cy.get('button').contains('Save').click();
+
     // 验证保存回调
-    cy.get('@onSave').should('have.been.calledWith', newContent)
-  })
+    cy.get('@onSave').should('have.been.calledWith', newContent);
+  });
 
   it('shows loading state', () => {
     cy.mount(
@@ -66,22 +66,17 @@ describe('FileEditor', () => {
         onSave={cy.stub()}
         isLoading={true}
       />
-    )
+    );
 
-    cy.get('.animate-spin').should('exist')
-  })
+    cy.get('.animate-spin').should('exist');
+  });
 
   it('shows empty state when no file selected', () => {
     cy.mount(
-      <FileEditor
-        file={null}
-        content=""
-        onSave={cy.stub()}
-        isLoading={false}
-      />
-    )
+      <FileEditor file={null} content="" onSave={cy.stub()} isLoading={false} />
+    );
 
-    cy.contains('Select a file to edit').should('exist')
-    cy.get('textarea').should('not.exist')
-  })
-}) 
+    cy.contains('Select a file to edit').should('exist');
+    cy.get('textarea').should('not.exist');
+  });
+});

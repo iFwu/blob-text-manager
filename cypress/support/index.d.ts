@@ -1,5 +1,5 @@
-import { BlobStorageMock } from "./blobStorageMock";
+import { BlobStorageMock } from './blobStorageMock';
 
 declare global {
   const blobStorageMock: BlobStorageMock;
-} 
+}

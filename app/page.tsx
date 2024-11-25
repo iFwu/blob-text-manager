@@ -25,10 +25,13 @@ export default function Home() {
 
   const [targetPath, setTargetPath] = useState<string>();
 
-  const handleSetCreateTarget = useCallback((directoryPath: string) => {
-    handleFileSelect(null);
-    setTargetPath(directoryPath);
-  }, [handleFileSelect]);
+  const handleSetCreateTarget = useCallback(
+    (directoryPath: string) => {
+      handleFileSelect(null);
+      setTargetPath(directoryPath);
+    },
+    [handleFileSelect]
+  );
 
   useEffect(() => {
     fetchFiles();
@@ -38,7 +41,7 @@ export default function Home() {
     <div className="h-screen flex flex-col">
       <div className="px-4 md:container md:mx-auto">
         <h1 className="text-2xl font-bold py-4">Blob Text Manager</h1>
-        <Split 
+        <Split
           className="flex flex-1 overflow-hidden"
           sizes={[25, 75]}
           minSize={200}

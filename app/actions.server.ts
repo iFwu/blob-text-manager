@@ -1,13 +1,23 @@
-"use server"
+'use server';
 
-import { list, put, del, createFolder } from "@vercel/blob"
-import type { BlobFile, BlobResult, BlobFileResult, BlobFolderResult } from "../types"
+import { list, put, del, createFolder } from '@vercel/blob';
+import type {
+  BlobFile,
+  BlobResult,
+  BlobFileResult,
+  BlobFolderResult,
+} from '../types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 
-function handleEmptyContent(content: string | File | null, pathname: string): string | File {
+function handleEmptyContent(
+  content: string | File | null,
+  pathname: string
+): string | File {
   if (typeof content === 'string') {
-    return content.trim() === '' ? ZERO_WIDTH_SPACE : content.replace(/^\u200B/, '');
+    return content.trim() === ''
+      ? ZERO_WIDTH_SPACE
+      : content.replace(/^\u200B/, '');
   } else if (content instanceof File && content.size === 0) {
     return new File([ZERO_WIDTH_SPACE], pathname, { type: content.type });
   }
@@ -19,15 +29,23 @@ function handleEmptyContent(content: string | File | null, pathname: string): st
 
 export async function listBlobs(): Promise<BlobFile[]> {
   const startTime = Date.now();
-  console.log(`[Server] List API request started at ${new Date(startTime).toISOString()}`);
-  
+  console.log(
+    `[Server] List API request started at ${new Date(startTime).toISOString()}`
+  );
+
   const { blobs } = await list();
 
   const fileMap = new Map<string, any>();
   blobs.forEach((blob) => {
-    const pathWithoutSuffix = blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1');
+    const pathWithoutSuffix = blob.pathname.replace(
+      /-[a-zA-Z0-9]{21}(\.[^.]+)?$/,
+      '$1'
+    );
     const existing = fileMap.get(pathWithoutSuffix);
-    if (!existing || new Date(blob.uploadedAt) > new Date(existing.uploadedAt)) {
+    if (
+      !existing ||
+      new Date(blob.uploadedAt) > new Date(existing.uploadedAt)
+    ) {
       fileMap.set(pathWithoutSuffix, blob);
     }
   });
@@ -42,23 +60,31 @@ export async function listBlobs(): Promise<BlobFile[]> {
   }));
 
   const endTime = Date.now();
-  console.log(`[Server] List API completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
+  console.log(
+    `[Server] List API completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`
+  );
   return processedBlobs;
 }
 
 export async function getBlob(url: string): Promise<string> {
   const startTime = Date.now();
-  console.log(`[Server] Get blob request started at ${new Date(startTime).toISOString()}`);
-  
+  console.log(
+    `[Server] Get blob request started at ${new Date(startTime).toISOString()}`
+  );
+
   const response = await fetch(url);
   if (!response.ok) {
-    console.error(`[Server] Blob fetch failed at ${new Date().toISOString()}: ${response.status}`);
+    console.error(
+      `[Server] Blob fetch failed at ${new Date().toISOString()}: ${response.status}`
+    );
     throw new Error('Failed to fetch blob content');
   }
-  
+
   const content = await response.text();
   const endTime = Date.now();
-  console.log(`[Server] Get blob completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
+  console.log(
+    `[Server] Get blob completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`
+  );
   return content;
 }
 
@@ -67,11 +93,14 @@ export async function putBlob(
   content: string | File | null
 ): Promise<BlobResult> {
   const startTime = Date.now();
-  console.log(`[Server] Put operation started at ${new Date(startTime).toISOString()}`);
-  
+  console.log(
+    `[Server] Put operation started at ${new Date(startTime).toISOString()}`
+  );
+
   const { blobs } = await list();
   const existingFiles = blobs.filter(
-    (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
+    (blob) =>
+      blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
 
   if (existingFiles.length > 0) {
@@ -79,17 +108,21 @@ export async function putBlob(
     console.log(
       `[Server] Deleting old versions started at ${new Date(deleteStart).toISOString()}`
     );
-    await del(existingFiles.map(file => file.url));
+    await del(existingFiles.map((file) => file.url));
     console.log(`[Server] Delete completed at ${new Date().toISOString()}`);
   }
 
   const isFolder = pathname.endsWith('/');
   if (isFolder) {
     const folderStart = Date.now();
-    console.log(`[Server] Folder creation started at ${new Date(folderStart).toISOString()}`);
+    console.log(
+      `[Server] Folder creation started at ${new Date(folderStart).toISOString()}`
+    );
     const result = await createFolder(pathname);
     const folderEnd = Date.now();
-    console.log(`[Server] Folder creation completed at ${new Date(folderEnd).toISOString()} (${folderEnd - folderStart}ms)`);
+    console.log(
+      `[Server] Folder creation completed at ${new Date(folderEnd).toISOString()} (${folderEnd - folderStart}ms)`
+    );
     return {
       type: 'folder',
       url: result.url,
@@ -98,16 +131,20 @@ export async function putBlob(
 
   content = handleEmptyContent(content, pathname);
   const putStart = Date.now();
-  console.log(`[Server] Put request started at ${new Date(putStart).toISOString()}`);
+  console.log(
+    `[Server] Put request started at ${new Date(putStart).toISOString()}`
+  );
 
   const result = await put(pathname, content, {
     access: 'public',
     addRandomSuffix: true,
   });
-  
+
   const endTime = Date.now();
-  console.log(`[Server] Put operation completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
-  
+  console.log(
+    `[Server] Put operation completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`
+  );
+
   return {
     type: 'file',
     url: result.url,
@@ -117,14 +154,16 @@ export async function putBlob(
 
 export async function deleteBlob(urls: string | string[]) {
   const startTime = Date.now();
-  console.log(`[Server] Delete request started at ${new Date(startTime).toISOString()}`);
-  
+  console.log(
+    `[Server] Delete request started at ${new Date(startTime).toISOString()}`
+  );
+
   const urlArray = Array.isArray(urls) ? urls : [urls];
   await del(urlArray);
-  
+
   const endTime = Date.now();
   console.log(
-    `[Server] Delete completed at ${new Date(endTime).toISOString()} ` + 
-    `(${endTime - startTime}ms)`
+    `[Server] Delete completed at ${new Date(endTime).toISOString()} ` +
+      `(${endTime - startTime}ms)`
   );
 }

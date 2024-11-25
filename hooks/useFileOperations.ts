@@ -7,7 +7,8 @@ export function useFileOperations() {
   const [selectedFile, setSelectedFile] = useState<BlobFile | null>(null);
   const [fileContent, setFileContent] = useState<string>('');
   const [isFileTreeLoading, setIsFileTreeLoading] = useState<boolean>(false);
-  const [isFileContentLoading, setIsFileContentLoading] = useState<boolean>(false);
+  const [isFileContentLoading, setIsFileContentLoading] =
+    useState<boolean>(false);
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
 
   const memoizedFiles = useMemo(() => files, [files]);
@@ -45,51 +46,57 @@ export function useFileOperations() {
     }
   }, []);
 
-  const validateFileName = useCallback((name: string, isDirectory: boolean): ValidationResult => {
-    if (!name) {
-      return { isValid: false, error: "Please enter a name" };
-    }
-
-    if (/[<>:"|?*\\]/.test(name)) {
-      return { isValid: false, error: "Name contains invalid characters" };
-    }
-
-    const parts = name.split('/').filter(Boolean);
-    if (parts.some(part => part === '.' || part === '..')) {
-      return { isValid: false, error: "Invalid path: cannot contain . or .." };
-    }
-
-    const baseName = parts[parts.length - 1];
-    const parentPath = parts.slice(0, -1).join('/');
-    const fullPath = name + (isDirectory ? '/' : '');
-    
-    const conflictingFile = files.find(f => {
-      const fParts = f.pathname.replace(/\/$/, '').split('/');
-      const fName = fParts[fParts.length - 1];
-      const fParent = fParts.slice(0, -1).join('/');
-      
-      return fName === baseName && fParent === parentPath;
-    });
-
-    if (conflictingFile) {
-      return { 
-        isValid: false, 
-        error: "File or folder already exists"
-      };
-    }
-
-    if (parts.length > 1) {
-      const parentDirPath = parts.slice(0, -1).join('/') + '/';
-      const parentExists = files.some(f => 
-        f.isDirectory && f.pathname === parentDirPath
-      );
-      if (!parentExists) {
-        return { isValid: false, error: "Parent directory does not exist" };
+  const validateFileName = useCallback(
+    (name: string, isDirectory: boolean): ValidationResult => {
+      if (!name) {
+        return { isValid: false, error: 'Please enter a name' };
       }
-    }
 
-    return { isValid: true, error: null };
-  }, [files]);
+      if (/[<>:"|?*\\]/.test(name)) {
+        return { isValid: false, error: 'Name contains invalid characters' };
+      }
+
+      const parts = name.split('/').filter(Boolean);
+      if (parts.some((part) => part === '.' || part === '..')) {
+        return {
+          isValid: false,
+          error: 'Invalid path: cannot contain . or ..',
+        };
+      }
+
+      const baseName = parts[parts.length - 1];
+      const parentPath = parts.slice(0, -1).join('/');
+      const fullPath = name + (isDirectory ? '/' : '');
+
+      const conflictingFile = files.find((f) => {
+        const fParts = f.pathname.replace(/\/$/, '').split('/');
+        const fName = fParts[fParts.length - 1];
+        const fParent = fParts.slice(0, -1).join('/');
+
+        return fName === baseName && fParent === parentPath;
+      });
+
+      if (conflictingFile) {
+        return {
+          isValid: false,
+          error: 'File or folder already exists',
+        };
+      }
+
+      if (parts.length > 1) {
+        const parentDirPath = parts.slice(0, -1).join('/') + '/';
+        const parentExists = files.some(
+          (f) => f.isDirectory && f.pathname === parentDirPath
+        );
+        if (!parentExists) {
+          return { isValid: false, error: 'Parent directory does not exist' };
+        }
+      }
+
+      return { isValid: true, error: null };
+    },
+    [files]
+  );
 
   const handleFileSave = useCallback(
     async (content: string, fileName?: string) => {
@@ -101,7 +108,7 @@ export function useFileOperations() {
 
         const isFolder = fileToSave.endsWith('/');
         const validation = validateFileName(fileToSave, isFolder);
-        
+
         if (!validation.isValid) {
           throw new Error(validation.error || 'Invalid file name');
         }
@@ -125,7 +132,9 @@ export function useFileOperations() {
         const updatedFile = {
           ...newFile,
           url: result.url,
-          ...(result.type === 'file' ? { downloadUrl: result.downloadUrl } : {}),
+          ...(result.type === 'file'
+            ? { downloadUrl: result.downloadUrl }
+            : {}),
         };
 
         if (fileName) {
@@ -161,36 +170,41 @@ export function useFileOperations() {
 
       // 更新 UI 状态
       setFiles((prevFiles) =>
-        prevFiles.filter((f) => !filesToDelete.some(fd => fd.pathname === f.pathname))
+        prevFiles.filter(
+          (f) => !filesToDelete.some((fd) => fd.pathname === f.pathname)
+        )
       );
 
       // 如果当前选中的文件在要删除的列表中，清除选择
-      if (selectedFile && filesToDelete.some(f => selectedFile.pathname.startsWith(f.pathname))) {
+      if (
+        selectedFile &&
+        filesToDelete.some((f) => selectedFile.pathname.startsWith(f.pathname))
+      ) {
         setSelectedFile(null);
         setFileContent('');
       }
 
       try {
         // 添加正在删除的文件到状态
-        setDeletingFiles(prev => {
+        setDeletingFiles((prev) => {
           const newSet = new Set(prev);
-          filesToDelete.forEach(f => newSet.add(f.pathname));
+          filesToDelete.forEach((f) => newSet.add(f.pathname));
           return newSet;
         });
 
         // 将多个单独的删除请求合并成一个批量删除
         const urlsToDelete = filesToDelete
-          .filter(f => f.url)
-          .map(f => f.url!);
+          .filter((f) => f.url)
+          .map((f) => f.url!);
 
         if (urlsToDelete.length > 0) {
           await deleteBlob(urlsToDelete);
         }
       } finally {
         // 删除完成后移除loading状态
-        setDeletingFiles(prev => {
+        setDeletingFiles((prev) => {
           const newSet = new Set(prev);
-          filesToDelete.forEach(f => newSet.delete(f.pathname));
+          filesToDelete.forEach((f) => newSet.delete(f.pathname));
           return newSet;
         });
       }
