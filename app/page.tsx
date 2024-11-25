@@ -22,11 +22,11 @@ export default function Home() {
     handleFileDelete,
   } = useFileOperations();
 
-  const [initialPath, setInitialPath] = useState<string>();
+  const [targetPath, setTargetPath] = useState<string>();
 
-  const handleAddDirectory = useCallback((directoryPath: string) => {
+  const handleSetCreateTarget = useCallback((directoryPath: string) => {
     handleFileSelect(null);
-    setInitialPath(directoryPath);
+    setTargetPath(directoryPath);
   }, [handleFileSelect]);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function Home() {
                   files={files}
                   onFileSelect={handleFileSelect}
                   onFileDelete={handleFileDelete}
-                  onAddDirectory={handleAddDirectory}
+                  onSetCreateTarget={handleSetCreateTarget}
                   isLoading={isFileTreeLoading}
                   selectedFile={selectedFile}
                 />
@@ -68,7 +68,7 @@ export default function Home() {
             <div className="space-y-4">
               <CreateForm
                 onCreateFile={(fileName) => {
-                  setInitialPath(undefined);
+                  setTargetPath(undefined);
                   return handleFileSave('', fileName);
                 }}
                 currentDirectory={
@@ -78,7 +78,7 @@ export default function Home() {
                       : selectedFile.pathname.split('/').slice(0, -1).join('/')
                     : ''
                 }
-                initialPath={initialPath}
+                targetPath={targetPath}
               />
               <FileEditor
                 key={selectedFile?.url}

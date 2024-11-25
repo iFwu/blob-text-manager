@@ -6,7 +6,7 @@ interface UseFileTreeProps {
   files: BlobFile[];
   handleDeleteClick: (file: BlobFile) => void;
   onFileSelect: (file: BlobFile | null) => void;
-  onAddDirectory: (directoryPath: string) => void;
+  onSetCreateTarget: (directoryPath: string) => void;
   renderFileActions: (file: BlobFile) => React.ReactNode;
   renderDirectoryActions: (path: string) => React.ReactNode;
 }

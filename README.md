@@ -47,9 +47,18 @@ cd vercel-blob-manager
 pnpm install
 ```
 
-3. Create a `.env.local` file with your Vercel Blob credentials:
+3. Set up environment variables:
+   - Copy `.env.example` to `.env.local` for development
+   - Add your Vercel Blob credentials
+```bash
+cp .env.example .env.local
 ```
-BLOB_READ_WRITE_TOKEN="your_vercel_blob_token"
+
+4. Set up test environment:
+   - Copy `.env.test.example` to `.env.test.local`
+   - Add your test credentials (uses client-side API calls)
+```bash
+cp .env.test.example .env.test.local
 ```
 
 ### Development
@@ -61,6 +70,23 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
+### Testing
+
+Run E2E tests in interactive mode:
+```bash
+pnpm e2e
+```
+
+Run E2E tests in headless mode:
+```bash
+pnpm e2e:headless
+```
+
+Run component tests:
+```bash
+pnpm component
+```
+
 ## Tech Stack
 
 - **Framework**: Next.js 15
@@ -68,6 +94,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 - **UI Components**: Shadcn UI
 - **Storage**: Vercel Blob
 - **State Management**: React Hooks
+- **Testing**: Cypress
 - **Development**: pnpm, ESLint, Prettier
 
 ## License

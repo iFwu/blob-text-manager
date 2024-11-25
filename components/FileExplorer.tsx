@@ -12,7 +12,7 @@ interface FileExplorerProps {
   files: BlobFile[];
   onFileSelect: (file: BlobFile | null) => void;
   onFileDelete: (file: BlobFile) => void;
-  onAddDirectory: (directoryPath: string) => void;
+  onSetCreateTarget: (directoryPath: string) => void;
   isLoading: boolean;
   selectedFile: BlobFile | null;
 }
@@ -21,7 +21,7 @@ export default function FileExplorer({
   files,
   onFileSelect,
   onFileDelete,
-  onAddDirectory,
+  onSetCreateTarget,
   isLoading,
   selectedFile,
 }: FileExplorerProps) {
@@ -45,7 +45,7 @@ export default function FileExplorer({
     files,
     handleDeleteClick,
     onFileSelect,
-    onAddDirectory,
+    onSetCreateTarget,
     renderFileActions: (file) => (
       <div className="flex items-center">
         <FileAction onDelete={() => handleDeleteClick(file)} />
@@ -57,7 +57,7 @@ export default function FileExplorer({
         <div className="flex items-center">
           <DirectoryAction
             onDelete={() => dirFile && handleDeleteClick(dirFile)}
-            onAdd={() => onAddDirectory(path)}
+            onAdd={() => onSetCreateTarget(path)}
             onFileSelect={onFileSelect}
           />
         </div>

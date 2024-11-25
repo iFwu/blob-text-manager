@@ -7,39 +7,49 @@ import { cn } from '@/lib/utils';
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
   currentDirectory: string;
-  initialPath?: string;
+  targetPath?: string;
 }
 
-const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, initialPath }: CreateFormProps) {
+const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, targetPath }: CreateFormProps) {
   const [newName, setNewName] = useState('');
   const [prefixWidth, setPrefixWidth] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const prefixRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const effectiveDirectory = initialPath || currentDirectory;
+  const effectiveDirectory = targetPath || currentDirectory;
 
   useEffect(() => {
     if (prefixRef.current) {
       const width = prefixRef.current.getBoundingClientRect().width;
       setPrefixWidth(width);
     }
-    if (initialPath) {
+    if (targetPath) {
       inputRef.current?.focus();
     }
-  }, [effectiveDirectory, initialPath]);
+  }, [effectiveDirectory, targetPath]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setNewName(e.target.value);
+    setError(null);
   }, []);
 
   const handleSubmit = useCallback((isDirectory: boolean) => {
-    if (newName) {
-      const fileName = isDirectory ? `${newName}/` : newName;
-      const cleanDirectory = effectiveDirectory.endsWith('/') ? effectiveDirectory.slice(0, -1) : effectiveDirectory;
-      const fullPath = cleanDirectory ? `${cleanDirectory}/${fileName}` : fileName;
-      onCreateFile(fullPath);
+    if (!newName) {
+      setError("Please enter a name");
+      return;
     }
+    if (/[<>]/.test(newName)) {
+      setError("Name contains invalid characters");
+      return;
+    }
+    
+    const fileName = isDirectory ? `${newName}/` : newName;
+    const cleanDirectory = effectiveDirectory.endsWith('/') ? effectiveDirectory.slice(0, -1) : effectiveDirectory;
+    const fullPath = cleanDirectory ? `${cleanDirectory}/${fileName}` : fileName;
+    onCreateFile(fullPath);
     setNewName('');
+    setError(null);
     inputRef.current?.focus();
   }, [newName, effectiveDirectory, onCreateFile]);
 
@@ -78,7 +88,11 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, in
           value={newName}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          className={cn('pr-[80px]', effectiveDirectory && 'pl-[var(--prefix-width)]')}
+          className={cn(
+            'pr-[80px]',
+            effectiveDirectory && 'pl-[var(--prefix-width)]',
+            error && 'border-destructive focus-visible:ring-destructive'
+          )}
           style={{ '--prefix-width': `${prefixWidth + 10}px` } as React.CSSProperties}
         />
         <div className="absolute right-0 top-0 bottom-0 flex">
@@ -103,6 +117,9 @@ const CreateForm = memo(function CreateForm({ onCreateFile, currentDirectory, in
           </Button>
         </div>
       </div>
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      )}
     </form>
   );
 });
