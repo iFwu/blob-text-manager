@@ -1,3 +1,14 @@
+/**
+ * Client-side implementation of blob management actions.
+ * THIS IS FOR TESTING PURPOSES ONLY!
+ * 
+ * This implementation allows intercepting API calls in the browser during tests.
+ * DO NOT USE IN PRODUCTION as it would expose your BLOB token.
+ * 
+ * The BLOB token should only be exposed during local debugging if absolutely 
+ * necessary. In production, always use the server-side implementation.
+ */
+
 'use client';
 
 import { list, put, del, createFolder } from '@vercel/blob';
@@ -5,12 +16,6 @@ import { BlobFile, BlobResult, BlobFileResult, BlobFolderResult } from '../types
 
 const ZERO_WIDTH_SPACE = '\u200B';
 const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
-
-console.log('Debug: actions.client.ts - Environment:', {
-  NEXT_PUBLIC_IS_TEST: process.env.NEXT_PUBLIC_IS_TEST,
-  NODE_ENV: process.env.NODE_ENV,
-  hasToken: !!token
-});
 
 function handleEmptyContent(content: string | File | null, pathname: string): string | File {
   if (typeof content === 'string') {
@@ -25,13 +30,7 @@ function handleEmptyContent(content: string | File | null, pathname: string): st
 }
 
 export async function listBlobs(): Promise<BlobFile[]> {
-  console.log('Debug: actions.client.ts - listBlobs called');
   const { blobs } = await list({ token });
-  console.log('Debug: actions.client.ts - listBlobs response:', {
-    count: blobs.length,
-    firstFew: blobs.slice(0, 3)
-  });
-
   const fileMap = new Map<string, any>();
 
   blobs.forEach((blob) => {
@@ -42,7 +41,7 @@ export async function listBlobs(): Promise<BlobFile[]> {
     }
   });
 
-  const processedBlobs = Array.from(fileMap.values()).map((blob) => ({
+  return Array.from(fileMap.values()).map((blob) => ({
     pathname: blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1'),
     url: blob.url,
     downloadUrl: blob.downloadUrl,
@@ -50,55 +49,31 @@ export async function listBlobs(): Promise<BlobFile[]> {
     uploadedAt: blob.uploadedAt,
     isDirectory: blob.pathname.endsWith('/') && blob.size === 0,
   }));
-
-  console.log('Debug: actions.client.ts - listBlobs processed:', {
-    count: processedBlobs.length,
-    firstFew: processedBlobs.slice(0, 3)
-  });
-
-  return processedBlobs;
 }
 
 export async function getBlob(url: string): Promise<string> {
-  console.log('Debug: actions.client.ts - getBlob called:', { url });
   const response = await fetch(url);
   if (!response.ok) {
-    console.error('Debug: actions.client.ts - getBlob failed:', {
-      status: response.status,
-      statusText: response.statusText
-    });
     throw new Error('Failed to fetch blob content');
   }
-  const content = await response.text();
-  console.log('Debug: actions.client.ts - getBlob success:', {
-    status: response.status,
-    contentLength: content.length
-  });
-  return content;
+  return response.text();
 }
 
 export async function putBlob(
   pathname: string,
   content: string | File | null
 ): Promise<BlobResult> {
-  console.log('Debug: actions.client.ts - putBlob called:', {
-    pathname,
-    contentType: content instanceof File ? content.type : typeof content
-  });
-
   const { blobs } = await list({ token });
   const existingFiles = blobs.filter(
     (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
 
   for (const oldVersion of existingFiles) {
-    console.log('Debug: actions.client.ts - Deleting old version:', oldVersion.url);
     await del(oldVersion.url, { token });
   }
 
   const isFolder = pathname.endsWith('/');
   if (isFolder) {
-    console.log('Debug: actions.client.ts - Creating folder:', pathname);
     const result = await createFolder(pathname, { token });
     return {
       type: 'folder',
@@ -114,11 +89,6 @@ export async function putBlob(
     token,
   });
 
-  console.log('Debug: actions.client.ts - putBlob success:', {
-    url: result.url,
-    pathname: result.pathname
-  });
-
   return {
     type: 'file',
     url: result.url,
@@ -127,7 +97,5 @@ export async function putBlob(
 }
 
 export async function deleteBlob(url: string) {
-  console.log('Debug: actions.client.ts - deleteBlob called:', { url });
   await del(url, { token });
-  console.log('Debug: actions.client.ts - deleteBlob success');
 }
