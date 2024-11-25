@@ -1,3 +1,5 @@
+import type { BlobOperations } from '../types';
+
 /**
  * This is the entry point for blob management actions.
  * It will use different implementations based on the environment:
@@ -7,14 +9,10 @@
 
 const isTest = process.env.NEXT_PUBLIC_IS_TEST === 'true';
 
-// Dynamically import the appropriate implementation
-const actions = isTest
-  ? require('./actions.client')
-  : require('./actions.server');
+// Dynamic import the appropriate implementation
+const actions: BlobOperations = isTest
+  ? await import('./actions.client')
+  : await import('./actions.server');
 
-export const {
-  listBlobs,
-  getBlob,
-  putBlob,
-  deleteBlob
-} = actions;
+export const { listBlobs, getBlob, putBlob, deleteBlob }: BlobOperations =
+  actions;

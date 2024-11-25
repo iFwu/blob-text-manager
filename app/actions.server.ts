@@ -1,7 +1,7 @@
-'use server';
+"use server"
 
-import { list, put, del, createFolder } from '@vercel/blob';
-import { BlobFile, BlobResult, BlobFileResult, BlobFolderResult } from '../types';
+import { list, put, del, createFolder } from "@vercel/blob"
+import type { BlobFile, BlobResult, BlobFileResult, BlobFolderResult } from "../types"
 
 const ZERO_WIDTH_SPACE = '\u200B';
 

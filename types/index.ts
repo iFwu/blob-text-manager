@@ -25,13 +25,13 @@ export interface BlobFile {
 }
 
 export type BlobFileResult = {
-  type: 'file';
+  type: "file";
   url: string;
   downloadUrl: string;
 };
 
 export type BlobFolderResult = {
-  type: 'folder';
+  type: "folder";
   url: string;
 };
 
@@ -41,3 +41,13 @@ export type ValidationResult = {
   isValid: boolean;
   error: string | null;
 };
+
+export interface BlobOperations {
+  listBlobs: () => Promise<BlobFile[]>
+  getBlob: (url: string) => Promise<string>
+  putBlob: (
+    pathname: string, 
+    content: string | File | null
+  ) => Promise<BlobResult>
+  deleteBlob: (url: string) => Promise<void>
+}

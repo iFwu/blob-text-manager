@@ -12,7 +12,7 @@
 'use client';
 
 import { list, put, del, createFolder } from '@vercel/blob';
-import { BlobFile, BlobResult, BlobFileResult, BlobFolderResult } from '../types';
+import type { BlobFile, BlobResult, BlobFileResult, BlobFolderResult, BlobOperations } from '../types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
