@@ -13,5 +13,6 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_IS_TEST: "true",
     },
+    experimentalRunAllSpecs: true,
   },
 });
