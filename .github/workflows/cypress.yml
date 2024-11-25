@@ -47,11 +47,13 @@ jobs:
       - name: Build
         env:
           NODE_ENV: test
+          NEXT_PUBLIC_IS_TEST: "true"
         run: pnpm build
 
       - name: Run E2E Tests
         env:
           NODE_ENV: test
+          NEXT_PUBLIC_IS_TEST: "true"
         run: pnpm e2e:ci
 
       - name: Upload Screenshots
