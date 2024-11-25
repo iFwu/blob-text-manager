@@ -1,45 +1,30 @@
-# Blob Text Manager
+# Vercel Blob Manager
 
-A specialized text file management application built on Vercel Blob Storage. This tool focuses on providing a clean, efficient interface for managing and editing text files, making it perfect for content management systems, blog platforms, or any text-based workflow.
+A specialized file management application built on Vercel Blob Storage. This tool provides a clean, efficient interface for managing files, making it perfect for content management systems, static assets, or any file-based workflow.
 
-## Current Focus
+## Features
 
-- 📝 Pure Text File Management
-  - Create, edit, and organize text files
+- 📁 File Management
+  - Create, edit, and organize files and folders
   - Hierarchical directory structure
-  - Clean and efficient text editor interface
+  - Intuitive file explorer interface
+  - Drag and drop support
+  - Multi-file operations
+
 - 🎯 Core Features
   - Tree-style file explorer
-  - Real-time text editing
+  - Real-time file operations
   - Directory management
-  - Simple and intuitive UI
-
-## Roadmap
-
-- 📘 Markdown Support
-  - Markdown editing with preview
-  - Rich text formatting tools
-  - Export capabilities
-- 🔄 Blog Management Features
-  - Post scheduling
-  - Metadata management
-  - Category and tag organization
-- 🎨 Enhanced UI/UX
-  - Theme customization
+  - Clean and modern UI
   - Keyboard shortcuts
-  - Split view editing
 
-## Technical Features
-
-- 🛠️ Modern Stack
-  - Built with Next.js 14 App Router
-  - Server/Client implementation switching for testing
+- 🛠️ Technical Features
+  - Built with Next.js 15 App Router
+  - Server Actions and Server Components
   - TypeScript for type safety
-  - Shadcn UI components for consistent design
-- 💾 Storage
-  - Powered by Vercel Blob Storage
+  - Shadcn UI components
+  - Vercel Blob Storage integration
   - Efficient file organization
-  - Secure file management
 
 ## Getting Started
 
@@ -53,8 +38,8 @@ A specialized text file management application built on Vercel Blob Storage. Thi
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/iFwu/blob-text-manager.git
-cd blob-text-manager
+git clone https://github.com/yourusername/vercel-blob-manager.git
+cd vercel-blob-manager
 ```
 
 2. Install dependencies:
@@ -64,13 +49,7 @@ pnpm install
 
 3. Create a `.env.local` file with your Vercel Blob credentials:
 ```
-NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN="your_vercel_blob_token"
-```
-
-4. For testing with client-side implementation, create a `.env.test.local`:
-```
-NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN="your_vercel_blob_token"
-NEXT_PUBLIC_IS_TEST="true"
+BLOB_READ_WRITE_TOKEN="your_vercel_blob_token"
 ```
 
 ### Development
@@ -78,22 +57,13 @@ NEXT_PUBLIC_IS_TEST="true"
 Run the development server:
 ```bash
 pnpm dev
-# or for testing environment
-pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-## Architecture
-
-The application uses a hybrid approach for Blob Storage operations:
-- Server-side implementation (`actions.server.ts`) for production
-- Client-side implementation (`actions.client.ts`) for testing
-- Environment-based switching between implementations
-
 ## Tech Stack
 
-- **Framework**: Next.js 14
+- **Framework**: Next.js 15
 - **Language**: TypeScript
 - **UI Components**: Shadcn UI
 - **Storage**: Vercel Blob
