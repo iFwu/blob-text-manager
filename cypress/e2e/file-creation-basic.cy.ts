@@ -31,7 +31,7 @@ describe('Basic File Creation Tests', () => {
 
     // 创建文件后应该被选中
     cy.get('[role="treeitem"]')
-      .contains('newfile-enter.txt')
+      .contains('newfile-click.txt')
       .parent()
       .should('have.class', 'bg-accent');
   });

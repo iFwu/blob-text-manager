@@ -61,7 +61,10 @@ const CreateForm = memo(function CreateForm({
       const fileName = isDirectory ? `${newName}/` : newName;
 
       const fullPath = effectiveDirectory
-        ? `${effectiveDirectory}${fileName}`.replace(/\/+/g, '/')
+        ? `${effectiveDirectory.replace(/\/+$/, '')}/${fileName}`.replace(
+            /\/+/g,
+            '/'
+          )
         : fileName;
 
       const validation = validateFileName(fullPath, isDirectory);

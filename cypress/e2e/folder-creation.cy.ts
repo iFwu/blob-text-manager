@@ -1,4 +1,4 @@
-describe.only('Folder Creation Tests', () => {
+describe('Folder Creation Tests', () => {
   const mockFiles = [
     { pathname: 'folder/', isFolder: true },
     { pathname: 'folder/test.txt', content: 'test content' },
