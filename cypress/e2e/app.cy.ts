@@ -1,8 +1,13 @@
 describe('Navigation', () => {
+  beforeEach(() => {
+    // Mock Vercel Blob API 请求
+    cy.intercept('GET', '**/blob.vercel-storage.com/**', {
+      statusCode: 200,
+      body: []
+    }).as('blobRequests')
+  })
+
   it('should navigate to the home page', () => {
-    // 监听 Vercel Blob API 请求
-    cy.intercept('GET', '**/blob.vercel-storage.com/**').as('blobRequests')
-    
     cy.visit('http://localhost:3000')
     cy.url().should('include', '/')
     
@@ -12,7 +17,7 @@ describe('Navigation', () => {
     
     // 等待所有 blob 请求完成
     cy.wait('@blobRequests').then((interception) => {
-      expect(interception.response?.statusCode).to.be.oneOf([200, 304])
+      expect(interception.response?.statusCode).to.equal(200)
     })
   })
 })
