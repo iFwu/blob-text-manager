@@ -9,7 +9,7 @@ export default defineConfig({
   },
   e2e: {
     experimentalMemoryManagement: true,
-    defaultCommandTimeout: 10000,
+    defaultCommandTimeout: process.env.CI ? 10000 : 3000,
     env: {
       NEXT_PUBLIC_IS_TEST: "true",
     },
