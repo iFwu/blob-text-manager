@@ -7,12 +7,15 @@ import type { BlobOperations } from '../types';
  * - In production: Uses server-side implementation
  */
 
-const isTest = process.env.NEXT_PUBLIC_IS_TEST === 'true';
+let actions: BlobOperations;
 
-// Dynamic import the appropriate implementation
-const actions: BlobOperations = isTest
-  ? await import('./actions.client')
-  : await import('./actions.server');
+if (process.env.NEXT_PUBLIC_IS_TEST === 'true') {
+  // 加载测试环境的 Client-side 模块
+  actions = require('./actions.client');
+} else {
+  // 加载生产环境的 Server-side 模块
+  actions = require('./actions.server');
+}
 
 export const { listBlobs, getBlob, putBlob, deleteBlob }: BlobOperations =
   actions;

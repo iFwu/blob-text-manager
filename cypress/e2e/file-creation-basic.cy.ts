@@ -28,6 +28,12 @@ describe('Basic File Creation Tests', () => {
     // 验证编辑器标题包含文件名和前缀
     cy.contains('h2', 'Editing: newfile-click.txt').should('be.visible');
     cy.wait('@putFile').its('response.statusCode').should('eq', 200);
+
+    // 创建文件后应该被选中
+    cy.get('[role="treeitem"]')
+      .contains('newfile-enter.txt')
+      .parent()
+      .should('have.class', 'bg-accent');
   });
 
   it('[FCB-02] should create new file in root directory using Enter key', () => {
@@ -43,5 +49,11 @@ describe('Basic File Creation Tests', () => {
     // 验证编辑器标题包含文件名和前缀
     cy.contains('h2', 'Editing: newfile-enter.txt').should('be.visible');
     cy.wait('@putFile').its('response.statusCode').should('eq', 200);
+
+    // 创建文件后应该被选中
+    cy.get('[role="treeitem"]')
+      .contains('newfile-enter.txt')
+      .parent()
+      .should('have.class', 'bg-accent');
   });
 });

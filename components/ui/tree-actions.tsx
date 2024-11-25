@@ -15,6 +15,8 @@ export function FileAction({ onDelete }: FileActionProps) {
     <Button
       variant="ghost"
       size="icon"
+      title="Delete File"
+      aria-label="Delete file"
       className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
       onClick={(e) => {
         e.stopPropagation();
@@ -46,6 +48,8 @@ export function DirectoryAction({ onDelete, onAdd, onFileSelect }: DirectoryActi
       <Button
         variant="ghost"
         size="icon"
+        title="Delete Folder"
+        aria-label="Delete folder"
         className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
         onClick={(e) => {
           e.stopPropagation();

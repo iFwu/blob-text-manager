@@ -21,13 +21,18 @@ describe('Subfolder File Creation Tests', () => {
     // 等待文件创建请求完成
     cy.wait('@putFile').its('response.statusCode').should('eq', 200);
 
-    // 验证文件创建成功并且父文件夹自动展开
+    // 验证文件创建成功并且父文件夹自动展开并被选中
     cy.get('[role="tree"]').within(() => {
       cy.get('[role="treeitem"]').contains('folder').should('be.visible');
       cy.get('[role="treeitem"]')
         .contains('newfile-prefix.txt')
         .should('be.visible');
     });
+    // 创建文件后应该被选中
+    cy.get('[role="treeitem"]')
+      .contains('newfile-prefix.txt')
+      .parent()
+      .should('have.class', 'bg-accent');
     // 验证编辑器标题包含文件名和前缀
     cy.contains('h2', 'Editing: folder/newfile-prefix.txt').should(
       'be.visible'
@@ -48,7 +53,7 @@ describe('Subfolder File Creation Tests', () => {
     // 等待文件创建请求完成
     cy.wait('@putFile').its('response.statusCode').should('eq', 200);
 
-    // 验证文件创建成功并且父文件夹自动展开
+    // 验证文件创建成功并且父文件夹自动展开并被选中
     cy.get('[role="treeitem"][data-type="file"]')
       .contains('newfile-prefix-click.txt')
       .parents('[role="treeitem"][data-type="directory"]')
@@ -56,6 +61,12 @@ describe('Subfolder File Creation Tests', () => {
       .within(() => {
         cy.contains('folder').should('exist');
       });
+
+    // 创建文件后应该被选中
+    cy.get('[role="treeitem"]')
+      .contains('newfile-prefix-click.txt')
+      .parent()
+      .should('have.class', 'bg-accent');
 
     // 验证编辑器标题包含文件名和前缀
     cy.contains('h2', 'Editing: folder/newfile-prefix-click.txt').should(
@@ -87,6 +98,12 @@ describe('Subfolder File Creation Tests', () => {
         cy.contains('folder').should('exist');
       });
 
+    // 创建文件后应该被选中
+    cy.get('[role="treeitem"]')
+      .contains('newfile-folder-click.txt')
+      .parent()
+      .should('have.class', 'bg-accent');
+
     // 验证编辑器标题
     cy.contains('h2', 'Editing: folder/newfile-folder-click.txt').should(
       'be.visible'
@@ -99,18 +116,21 @@ describe('Subfolder File Creation Tests', () => {
     cy.wait('@putFile').its('response.statusCode').should('eq', 200);
   });
 
-  it('[FCS-04] should respect current directory when creating file with path', () => {
+  it('[FCS-04][bugfix] should respect current directory when creating file with path', () => {
     // 添加 other 文件夹
     cy.get("input[placeholder*='Enter name']").type('folder/other/{enter}');
 
     // 点击 folder 的按钮，设置当前目录
+    // 使用 [role="presentation"] 来避免选择到子文件夹
     cy.contains('[role="presentation"]', 'folder')
       .realHover()
       .find('button[aria-label="Create file in folder"]')
       .click();
 
     // 验证当前目录前缀显示正确
-    cy.get('[aria-label="current directory"]').should('have.text', 'folder/');
+    cy.get('[aria-label="current directory"]').should(el => {
+      expect(el.text().trim()).to.equal('folder/');
+    });
 
     // 尝试在输入框中输入带有其他目录的路径
     cy.get("input[placeholder*='Enter name']").type('other/test.txt{enter}');
@@ -129,6 +149,12 @@ describe('Subfolder File Creation Tests', () => {
       .within(() => {
         cy.contains('other').should('exist');
       });
+
+
+    // 验证当前目录前缀显示正确
+    cy.get('[aria-label="current directory"]').should(el => {
+      expect(el.text().trim()).to.equal('folder/other/');
+    });
 
     // 验证编辑器标题
     cy.contains('h2', 'Editing: folder/other/test.txt').should('be.visible');

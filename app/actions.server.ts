@@ -74,10 +74,12 @@ export async function putBlob(
     (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
 
-  for (const oldVersion of existingFiles) {
+  if (existingFiles.length > 0) {
     const deleteStart = Date.now();
-    console.log(`[Server] Deleting old version started at ${new Date(deleteStart).toISOString()}`);
-    await del(oldVersion.url);
+    console.log(
+      `[Server] Deleting old versions started at ${new Date(deleteStart).toISOString()}`
+    );
+    await del(existingFiles.map(file => file.url));
     console.log(`[Server] Delete completed at ${new Date().toISOString()}`);
   }
 
@@ -113,12 +115,16 @@ export async function putBlob(
   } satisfies BlobFileResult;
 }
 
-export async function deleteBlob(url: string) {
+export async function deleteBlob(urls: string | string[]) {
   const startTime = Date.now();
   console.log(`[Server] Delete request started at ${new Date(startTime).toISOString()}`);
   
-  await del(url);
+  const urlArray = Array.isArray(urls) ? urls : [urls];
+  await del(urlArray);
   
   const endTime = Date.now();
-  console.log(`[Server] Delete completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`);
+  console.log(
+    `[Server] Delete completed at ${new Date(endTime).toISOString()} ` + 
+    `(${endTime - startTime}ms)`
+  );
 }

@@ -68,8 +68,8 @@ export async function putBlob(
     (blob) => blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1') === pathname
   );
 
-  for (const oldVersion of existingFiles) {
-    await del(oldVersion.url, { token });
+  if (existingFiles.length > 0) {
+    await del(existingFiles.map(file => file.url), { token });
   }
 
   const isFolder = pathname.endsWith('/');
@@ -96,6 +96,7 @@ export async function putBlob(
   } satisfies BlobFileResult;
 }
 
-export async function deleteBlob(url: string) {
-  await del(url, { token });
+export async function deleteBlob(urls: string | string[]) {
+  const urlArray = Array.isArray(urls) ? urls : [urls];
+  await del(urlArray, { token });
 }

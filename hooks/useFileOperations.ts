@@ -170,25 +170,24 @@ export function useFileOperations() {
         setFileContent('');
       }
 
-      // 添加正在删除的文件到状态
-      setDeletingFiles(prev => {
-        const newSet = new Set(prev);
-        filesToDelete.forEach(f => newSet.add(f.pathname));
-        return newSet;
-      });
-
-      // 删除所有相关文件
       try {
-        await Promise.all(
-          filesToDelete
-            .filter(f => f.url)
-            .map(f => deleteBlob(f.url!))
-        );
-      } catch (error) {
-        console.error('Error deleting files:', error);
-        await fetchFiles();
+        // 添加正在删除的文件到状态
+        setDeletingFiles(prev => {
+          const newSet = new Set(prev);
+          filesToDelete.forEach(f => newSet.add(f.pathname));
+          return newSet;
+        });
+
+        // 将多个单独的删除请求合并成一个批量删除
+        const urlsToDelete = filesToDelete
+          .filter(f => f.url)
+          .map(f => f.url!);
+
+        if (urlsToDelete.length > 0) {
+          await deleteBlob(urlsToDelete);
+        }
       } finally {
-        // 从正在删除状态中移除
+        // 删除完成后移除loading状态
         setDeletingFiles(prev => {
           const newSet = new Set(prev);
           filesToDelete.forEach(f => newSet.delete(f.pathname));
@@ -196,7 +195,7 @@ export function useFileOperations() {
         });
       }
     },
-    [files, selectedFile, fetchFiles]
+    [files, selectedFile]
   );
 
   return {

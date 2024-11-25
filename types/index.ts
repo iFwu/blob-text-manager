@@ -49,5 +49,5 @@ export interface BlobOperations {
     pathname: string, 
     content: string | File | null
   ) => Promise<BlobResult>
-  deleteBlob: (url: string) => Promise<void>
+  deleteBlob: (urls: string | string[]) => Promise<void>
 }
