@@ -1,10 +1,14 @@
 import CreateForm from '@/components/CreateForm';
+import { ValidateFileNameParams, ValidationResult } from '@/types';
 
 describe('CreateForm', () => {
   // 添加一个模拟的验证函数
-  const mockValidateFileName = (name: string) => ({
-    isValid: !name.includes('<'),
-    error: name.includes('<') ? 'Name contains invalid characters' : null,
+  const mockValidateFileName: (
+    params: ValidateFileNameParams
+  ) => ValidationResult = (params) => ({
+    isValid: !params.pathname.includes('<'),
+    error:
+      params.pathname.includes('<') ? 'Name contains invalid characters' : null,
   });
 
   it('renders with target path', () => {
