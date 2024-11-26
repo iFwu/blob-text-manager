@@ -93,7 +93,7 @@ export default function Home() {
                 validateFileName={validateFileName}
               />
               <FileEditor
-                key={selectedFile?.url}
+                key={selectedFile?.pathname}
                 file={selectedFile?.isDirectory ? null : selectedFile}
                 content={fileContent}
                 onSave={async (content) => {
@@ -103,7 +103,7 @@ export default function Home() {
                       description: 'Please select a file to save',
                       variant: 'destructive',
                     });
-                    return;
+                    throw new Error('Please select a file to save');
                   }
                   if (content === '' || content.trim() === ZERO_WIDTH_SPACE) {
                     toast({
@@ -111,7 +111,7 @@ export default function Home() {
                       description: 'File content cannot be empty',
                       variant: 'destructive',
                     });
-                    return;
+                    throw new Error('File content cannot be empty');
                   }
                   await handleFileSave({
                     content,

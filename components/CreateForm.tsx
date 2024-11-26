@@ -12,6 +12,7 @@ import { PlusIcon, FolderPlusIcon, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ValidateFileNameParams, ValidationResult } from '@/types';
 import { toast } from '@/components/ui/use-toast';
+import { useAnimatedState } from '@/hooks/useAnimatedState';
 
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
@@ -19,8 +20,6 @@ interface CreateFormProps {
   targetPath?: string;
   validateFileName: (params: ValidateFileNameParams) => ValidationResult;
 }
-
-type ButtonState = 'idle' | 'loading' | 'success';
 
 const CreateForm = memo(function CreateForm({
   onCreateFile,
@@ -31,22 +30,23 @@ const CreateForm = memo(function CreateForm({
   const [newName, setNewName] = useState('');
   const [prefixWidth, setPrefixWidth] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [fileButtonState, setFileButtonState] = useState<ButtonState>('idle');
-  const [folderButtonState, setFolderButtonState] =
-    useState<ButtonState>('idle');
+  const {
+    state: fileButtonState,
+    startLoading: startFileLoading,
+    setSuccess: setFileSuccess,
+    reset: resetFileState,
+  } = useAnimatedState();
+  const {
+    state: folderButtonState,
+    startLoading: startFolderLoading,
+    setSuccess: setFolderSuccess,
+    reset: resetFolderState,
+  } = useAnimatedState();
+  
   const prefixRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const successTimeoutRef = useRef<NodeJS.Timeout>();
 
   const effectiveDirectory = targetPath || currentDirectory;
-
-  useEffect(() => {
-    return () => {
-      if (successTimeoutRef.current) {
-        clearTimeout(successTimeoutRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (prefixRef.current) {
@@ -66,17 +66,6 @@ const CreateForm = memo(function CreateForm({
     []
   );
 
-  const showSuccessState = useCallback((isDirectory: boolean) => {
-    const setState = isDirectory ? setFolderButtonState : setFileButtonState;
-    setState('success');
-    if (successTimeoutRef.current) {
-      clearTimeout(successTimeoutRef.current);
-    }
-    successTimeoutRef.current = setTimeout(() => {
-      setState('idle');
-    }, 2000);
-  }, []);
-
   const handleSubmit = useCallback(
     async (isDirectory: boolean) => {
       const currentState = isDirectory ? folderButtonState : fileButtonState;
@@ -88,7 +77,6 @@ const CreateForm = memo(function CreateForm({
       }
 
       const fileName = isDirectory ? `${newName}/` : newName;
-
       const fullPath = effectiveDirectory
         ? `${effectiveDirectory.replace(/\/+$/, '')}/${fileName}`.replace(
             /\/+/g,
@@ -105,20 +93,21 @@ const CreateForm = memo(function CreateForm({
         return;
       }
 
-      const setState = isDirectory ? setFolderButtonState : setFileButtonState;
-      setState('loading');
+      if (isDirectory) {
+        startFolderLoading();
+      } else {
+        startFileLoading();
+      }
+
       try {
         await onCreateFile(fullPath);
         setNewName('');
         setError(null);
-        
-        // 在设置新状态前清除所有定时器
-        if (successTimeoutRef.current) {
-          clearTimeout(successTimeoutRef.current);
-          successTimeoutRef.current = undefined;
+        if (isDirectory) {
+          await setFolderSuccess();
+        } else {
+          await setFileSuccess();
         }
-        
-        showSuccessState(isDirectory);
       } catch (error) {
         console.error('Failed to create:', error);
         let errorMessage = `Failed to create ${isDirectory ? 'folder' : 'file'}.`;
@@ -130,7 +119,11 @@ const CreateForm = memo(function CreateForm({
           description: errorMessage,
           variant: 'destructive',
         });
-        setState('idle');
+        if (isDirectory) {
+          resetFolderState();
+        } else {
+          resetFileState();
+        }
       } finally {
         inputRef.current?.focus();
       }
@@ -138,11 +131,16 @@ const CreateForm = memo(function CreateForm({
     [
       newName,
       effectiveDirectory,
-      onCreateFile,
       validateFileName,
+      onCreateFile,
       fileButtonState,
       folderButtonState,
-      showSuccessState,
+      startFileLoading,
+      startFolderLoading,
+      setFileSuccess,
+      setFolderSuccess,
+      resetFileState,
+      resetFolderState,
     ]
   );
 
