@@ -42,7 +42,7 @@ const CreateForm = memo(function CreateForm({
     setSuccess: setFolderSuccess,
     reset: resetFolderState,
   } = useAnimatedState();
-  
+
   const prefixRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -104,9 +104,9 @@ const CreateForm = memo(function CreateForm({
         setNewName('');
         setError(null);
         if (isDirectory) {
-          await setFolderSuccess();
+          setFolderSuccess();
         } else {
-          await setFileSuccess();
+          setFileSuccess();
         }
       } catch (error) {
         console.error('Failed to create:', error);
@@ -198,7 +198,9 @@ const CreateForm = memo(function CreateForm({
               error && 'border-destructive focus-visible:ring-destructive'
             )}
             style={
-              { '--prefix-width': `${prefixWidth + 10}px` } as React.CSSProperties
+              {
+                '--prefix-width': `${prefixWidth + 10}px`,
+              } as React.CSSProperties
             }
             disabled={isProcessing}
           />

@@ -7,8 +7,9 @@ describe('CreateForm', () => {
     params: ValidateFileNameParams
   ) => ValidationResult = (params) => ({
     isValid: !params.pathname.includes('<'),
-    error:
-      params.pathname.includes('<') ? 'Name contains invalid characters' : null,
+    error: params.pathname.includes('<')
+      ? 'Name contains invalid characters'
+      : null,
   });
 
   it('renders with target path', () => {

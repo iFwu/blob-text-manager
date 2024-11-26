@@ -47,6 +47,8 @@ const Toast = React.forwardRef<
     <ToastPrimitives.Root
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
+      role="alert"
+      aria-live="assertive"
       {...props}
     />
   );
@@ -93,6 +95,8 @@ const ToastTitle = React.forwardRef<
   <ToastPrimitives.Title
     ref={ref}
     className={cn('text-sm font-semibold', className)}
+    role="heading"
+    aria-level={2}
     {...props}
   />
 ));
@@ -105,6 +109,8 @@ const ToastDescription = React.forwardRef<
   <ToastPrimitives.Description
     ref={ref}
     className={cn('text-sm opacity-90', className)}
+    role="status"
+    aria-live="polite"
     {...props}
   />
 ));

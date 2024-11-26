@@ -28,7 +28,12 @@ export default function FileEditor({
 }: FileEditorProps) {
   const editorKey = file?.pathname || 'no-file';
   const [editedContent, setEditedContent] = useState(content);
-  const { state: buttonState, startLoading, setSuccess, reset } = useAnimatedState();
+  const {
+    state: buttonState,
+    startLoading,
+    setSuccess,
+    reset,
+  } = useAnimatedState();
 
   useEffect(() => {
     setEditedContent(content);
@@ -40,7 +45,7 @@ export default function FileEditor({
     startLoading();
     try {
       await onSave(editedContent);
-      await setSuccess();
+      setSuccess();
     } catch (error) {
       console.error('Failed to save file:', error);
       let errorMessage = 'Failed to save the file.';
@@ -131,21 +136,22 @@ export default function FileEditor({
               buttonState === 'loading'
                 ? 'Saving...'
                 : buttonState === 'success'
-                ? 'Saved!'
-                : 'Save changes'
+                  ? 'Saved!'
+                  : 'Save changes'
             }
             title={
               buttonState === 'loading'
                 ? 'Saving...'
                 : buttonState === 'success'
-                ? 'Saved!'
-                : 'Save changes'
+                  ? 'Saved!'
+                  : 'Save changes'
             }
             className={cn(
               'rounded-full w-10 h-10',
               'bg-emerald-100/80 hover:bg-emerald-200/80 text-emerald-600',
               'transition-all duration-300 ease-in-out hover:w-[5.5rem]',
-              'group flex items-center justify-center gap-0 overflow-hidden'
+              'group flex items-center justify-center gap-0 overflow-hidden',
+              buttonState === 'loading' && 'opacity-50 cursor-not-allowed'
             )}
           >
             {buttonState === 'loading' ? (

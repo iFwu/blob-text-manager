@@ -40,7 +40,7 @@ export function useAnimatedState({
     setState('loading');
   }, [state]);
 
-  const setSuccess = useCallback(async () => {
+  const setSuccess = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
