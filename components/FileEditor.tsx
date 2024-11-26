@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { useAnimatedState } from '@/hooks/useAnimatedState';
+import { CloseConfirmDialog } from '@/components/CloseConfirmDialog';
 
 interface FileEditorProps {
   file: BlobFile | null;
@@ -15,9 +16,8 @@ interface FileEditorProps {
   onSave: (content: string) => Promise<void>;
   isLoading?: boolean;
   onClose: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
-
-export const ZERO_WIDTH_SPACE = '\u200B';
 
 export default function FileEditor({
   file,
@@ -25,9 +25,12 @@ export default function FileEditor({
   onSave,
   isLoading = false,
   onClose,
+  onDirtyChange,
 }: FileEditorProps) {
   const editorKey = file?.pathname || 'no-file';
   const [editedContent, setEditedContent] = useState(content);
+  const [isDirty, setIsDirty] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const {
     state: buttonState,
     startLoading,
@@ -36,8 +39,15 @@ export default function FileEditor({
   } = useAnimatedState();
 
   useEffect(() => {
-    setEditedContent(content);
-  }, [content]);
+    if (file?.pathname) {
+      setEditedContent(content);
+      setIsDirty(false);
+    }
+  }, [file?.pathname]);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleSave = async () => {
     if (buttonState === 'loading') return;
@@ -46,6 +56,7 @@ export default function FileEditor({
     try {
       await onSave(editedContent);
       setSuccess();
+      setIsDirty(false);
     } catch (error) {
       console.error('Failed to save file:', error);
       let errorMessage = 'Failed to save the file.';
@@ -58,6 +69,36 @@ export default function FileEditor({
         variant: 'destructive',
       });
       reset();
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    startLoading();
+    try {
+      await onSave(editedContent);
+      setSuccess();
+      setIsDirty(false);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save file:', error);
+      let errorMessage = 'Failed to save the file.';
+      if (error instanceof Error) {
+        errorMessage += ` Error: ${error.message}`;
+      }
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      reset();
+    }
+  };
+
+  const handleClose = () => {
+    if (isDirty) {
+      setShowCloseConfirm(true);
+    } else {
+      onClose();
     }
   };
 
@@ -88,7 +129,7 @@ export default function FileEditor({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onClose}
+          onClick={handleClose}
           disabled={buttonState === 'loading'}
           aria-label="Close editor"
           title="Close editor"
@@ -118,20 +159,24 @@ export default function FileEditor({
         </Button>
         <CardTitle className="text-lg font-semibold">
           Editing: {file.pathname}
+          {isDirty && ' *'}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow p-0 relative">
         <Textarea
           className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           value={editedContent}
-          onChange={(e) => setEditedContent(e.target.value)}
+          onChange={(e) => {
+            setEditedContent(e.target.value);
+            setIsDirty(e.target.value !== content);
+          }}
           aria-label={`Edit content of ${file.pathname}`}
           title={`Edit content of ${file.pathname}`}
         />
         <div className="absolute bottom-4 right-4">
           <Button
             onClick={handleSave}
-            disabled={buttonState === 'loading'}
+            disabled={buttonState === 'loading' || !isDirty}
             aria-label={
               buttonState === 'loading'
                 ? 'Saving...'
@@ -150,8 +195,7 @@ export default function FileEditor({
               'rounded-full w-10 h-10',
               'bg-emerald-100/80 hover:bg-emerald-200/80 text-emerald-600',
               'transition-all duration-300 ease-in-out hover:w-[5.5rem]',
-              'group flex items-center justify-center gap-0 overflow-hidden',
-              buttonState === 'loading' && 'opacity-50 cursor-not-allowed'
+              'group flex items-center justify-center gap-0 overflow-hidden'
             )}
           >
             {buttonState === 'loading' ? (
@@ -182,6 +226,12 @@ export default function FileEditor({
           </Button>
         </div>
       </CardContent>
+      <CloseConfirmDialog
+        open={showCloseConfirm}
+        onOpenChange={setShowCloseConfirm}
+        onDiscard={onClose}
+        onSaveAndClose={handleSaveAndClose}
+      />
     </Card>
   );
 }

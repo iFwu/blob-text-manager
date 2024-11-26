@@ -38,8 +38,8 @@ export function DirectoryAction({
       <Button
         variant="ghost"
         size="icon"
-        title="Create File"
-        aria-label="Create file in folder"
+        title="Add Folder Path"
+        aria-label="Add folder path to prefix"
         className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
         onClick={(e) => {
           e.stopPropagation();
