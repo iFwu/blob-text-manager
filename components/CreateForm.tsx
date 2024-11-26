@@ -10,13 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusIcon, FolderPlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ValidationResult } from '@/types';
+import { ValidateFileNameParams, ValidationResult } from '@/types';
 
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
   currentDirectory: string;
   targetPath?: string;
-  validateFileName: (name: string, isDirectory: boolean) => ValidationResult;
+  validateFileName: (params: ValidateFileNameParams) => ValidationResult;
 }
 
 const CreateForm = memo(function CreateForm({
@@ -67,7 +67,10 @@ const CreateForm = memo(function CreateForm({
           )
         : fileName;
 
-      const validation = validateFileName(fullPath, isDirectory);
+      const validation = validateFileName({
+        pathname: fullPath,
+        isEditing: false,
+      });
       if (!validation.isValid) {
         setError(validation.error);
         return;

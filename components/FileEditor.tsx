@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { BlobFile } from '@/types';
+import { ZERO_WIDTH_SPACE } from '@/lib/const';
 
 interface FileEditorProps {
   file: BlobFile | null;
@@ -10,8 +11,6 @@ interface FileEditorProps {
   isLoading?: boolean;
   onClose: () => void;
 }
-
-const ZERO_WIDTH_SPACE = '\u200B';
 
 export default function FileEditor({
   file,

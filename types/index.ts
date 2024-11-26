@@ -45,9 +45,17 @@ export type ValidationResult = {
 export interface BlobOperations {
   listBlobs: () => Promise<BlobFile[]>;
   getBlob: (url: string) => Promise<string>;
-  putBlob: (
-    pathname: string,
-    content: string | File | null
-  ) => Promise<BlobResult>;
+  putBlob: (pathname: string, content?: string | File) => Promise<BlobResult>;
   deleteBlob: (urls: string | string[]) => Promise<void>;
+}
+
+export interface ValidateFileNameParams {
+  pathname: string;
+  isEditing: boolean;
+}
+
+export interface SaveFileParams {
+  content: string;
+  pathname: string;
+  isEditing: boolean;
 }
