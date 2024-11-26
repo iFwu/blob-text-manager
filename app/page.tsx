@@ -45,7 +45,7 @@ export default function Home() {
           className="flex flex-1 overflow-hidden"
           sizes={[25, 75]}
           minSize={200}
-          gutterSize={4}
+          gutterSize={3}
           snapOffset={30}
         >
           <div className="flex flex-col h-full">
