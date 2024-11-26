@@ -1,6 +1,7 @@
 import FileEditor from '@/components/FileEditor';
 import { BlobFile } from '@/types';
 import { Toaster } from '@/components/ui/toaster';
+import { createAsyncStub } from '../support/utils';
 
 describe('FileEditor', () => {
   const mockFile: BlobFile = {
@@ -161,35 +162,8 @@ describe('FileEditor', () => {
     cy.get('textarea').should('have.value', updatedContent);
   });
 
-  it('disables save button while saving', () => {
-    const savePromise = new Promise<void>((resolve) => {
-      setTimeout(resolve, 1000);
-    });
-    const onSave = cy.stub().returns(savePromise);
-
-    cy.mount(
-      <TestWrapper>
-        <FileEditor
-          file={mockFile}
-          content="Test content"
-          onSave={onSave}
-          isLoading={false}
-          onClose={cy.stub()}
-        />
-      </TestWrapper>
-    );
-
-    cy.get('button[aria-label="Save changes"]').as('saveButton').click();
-    cy.get('button[aria-label="Saving..."]').should('exist');
-    cy.get('.animate-spin').should('exist');
-  });
-
   it('shows loading and success states', () => {
-    // 创建一个延迟 resolve 的 Promise
-    const savePromise = new Promise<void>((resolve) => {
-      setTimeout(resolve, 1000);
-    });
-    const onSave = cy.stub().returns(savePromise);
+    const onSave = createAsyncStub();
 
     cy.mount(
       <TestWrapper>
@@ -204,9 +178,10 @@ describe('FileEditor', () => {
     );
 
     cy.get('button[aria-label="Save changes"]').click();
-    cy.get('button[aria-label="Saving..."]').should('exist');
+    cy.get('button[aria-label="Saving..."]').should('be.disabled');
     cy.get('.animate-spin').should('exist');
     cy.get('button[aria-label="Saved!"]', { timeout: 3000 }).should('exist');
+    cy.get('button[aria-label="Save changes"]').should('be.enabled');
   });
 
   it('handles empty content', () => {
@@ -243,29 +218,5 @@ describe('FileEditor', () => {
     cy.get('[role="region"]').should('have.attr', 'aria-label', 'File editor');
     cy.get('button[aria-label="Close editor"]').should('exist');
     cy.get('textarea').should('have.attr', 'aria-label').and('not.be.empty');
-  });
-
-  it('shows loading state while saving', () => {
-    // Create a Promise that won't resolve immediately
-    const savePromise = new Promise<void>((resolve) => {
-      setTimeout(resolve, 1000);
-    });
-    const onSave = cy.stub().returns(savePromise);
-
-    cy.mount(
-      <TestWrapper>
-        <FileEditor
-          file={mockFile}
-          content="Test content"
-          onSave={onSave}
-          isLoading={false}
-          onClose={cy.stub()}
-        />
-      </TestWrapper>
-    );
-
-    cy.get('button[aria-label="Save changes"]').click();
-    cy.get('button[aria-label="Saving..."]').should('exist');
-    cy.get('.animate-spin').should('exist');
   });
 });

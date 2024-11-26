@@ -212,7 +212,13 @@ const CreateForm = memo(function CreateForm({
               className="rounded-none hover:bg-transparent"
               disabled={isProcessing}
               title="Create File (Enter)"
-              aria-label="Create new file"
+              aria-label={
+                fileButtonState === 'loading'
+                  ? 'Creating file...'
+                  : fileButtonState === 'success'
+                  ? 'File created!'
+                  : 'Create new file'
+              }
             >
               {fileButtonState === 'loading' ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -229,7 +235,13 @@ const CreateForm = memo(function CreateForm({
               disabled={isProcessing}
               onClick={() => handleSubmit(true)}
               title="Create Folder (Shift+Enter)"
-              aria-label="Create new folder"
+              aria-label={
+                folderButtonState === 'loading'
+                  ? 'Creating folder...'
+                  : folderButtonState === 'success'
+                  ? 'Folder created!'
+                  : 'Create new folder'
+              }
             >
               {folderButtonState === 'loading' ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

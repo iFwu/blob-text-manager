@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+/// <reference types="@types/sinon" />
 
 // ***********************************************
 // This example commands.ts shows you how to
