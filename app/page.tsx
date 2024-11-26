@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Split from 'react-split';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 
 import FileExplorer from '@/components/FileExplorer';
 import CreateForm from '@/components/CreateForm';
@@ -10,6 +10,8 @@ import FileEditor from '@/components/FileEditor';
 import { useFileOperations } from '@/hooks/useFileOperations';
 import { toast } from '@/components/ui/use-toast';
 import { ZERO_WIDTH_SPACE } from '@/lib/const';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const {
@@ -23,10 +25,12 @@ export default function Home() {
     handleFileSelect,
     handleFileSave,
     handleFileDelete,
+    handleDeleteAll,
     validateFileName,
   } = useFileOperations();
 
   const [targetPath, setTargetPath] = useState<string>();
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
 
   const handleSetCreateTarget = useCallback(
     (directoryPath: string) => {
@@ -53,11 +57,22 @@ export default function Home() {
         >
           <div className="flex flex-col h-full">
             <div className="p-4 space-y-4">
-              <div className="flex items-center">
-                <h2 className="text-lg font-semibold">Files</h2>
-                {deletingFiles.size > 0 && (
-                  <Loader2 className="ml-2 h-4 w-4 animate-spin text-muted-foreground" />
-                )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <h2 className="text-lg font-semibold">Files</h2>
+                  {deletingFiles.size > 0 && (
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsDeleteAllDialogOpen(true)}
+                  className="h-8 w-8"
+                  aria-label="Delete all files"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
               <div className="h-full overflow-auto pr-2">
                 <FileExplorer
@@ -126,6 +141,26 @@ export default function Home() {
           </div>
         </Split>
       </div>
+      <DeleteConfirmDialog
+        isOpen={isDeleteAllDialogOpen}
+        onOpenChange={setIsDeleteAllDialogOpen}
+        onConfirm={async () => {
+          try {
+            await handleDeleteAll();
+            toast({
+              title: "Success",
+              description: "All files have been deleted",
+            });
+          } catch (error) {
+            toast({
+              title: "Error",
+              description: "Failed to delete all files",
+              variant: "destructive",
+            });
+          }
+        }}
+        itemType="all"
+      />
     </div>
   );
 }

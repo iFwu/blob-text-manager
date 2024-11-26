@@ -230,6 +230,41 @@ export function useFileOperations() {
     [files, selectedFile]
   );
 
+  const handleDeleteAll = useCallback(async () => {
+    if (files.length === 0) return;
+
+    // 更新 UI 状态
+    const previousFiles = [...files];
+    setFiles([]);
+    setSelectedFile(null);
+    setFileContent('');
+
+    try {
+      // 添加所有文件到删除状态
+      setDeletingFiles((prev) => {
+        const newSet = new Set(prev);
+        files.forEach((f) => newSet.add(f.pathname));
+        return newSet;
+      });
+
+      // 收集所有需要删除的文件 URL
+      const urlsToDelete = files
+        .filter((f) => f.url)
+        .map((f) => f.url!);
+
+      if (urlsToDelete.length > 0) {
+        await deleteBlob(urlsToDelete);
+      }
+    } catch (error) {
+      // 如果删除失败，恢复之前的状态
+      setFiles(previousFiles);
+      throw error;
+    } finally {
+      // 删除完成后移除 loading 状态
+      setDeletingFiles(new Set());
+    }
+  }, [files]);
+
   return {
     files: memoizedFiles,
     selectedFile,
@@ -241,6 +276,7 @@ export function useFileOperations() {
     handleFileSelect,
     handleFileSave,
     handleFileDelete,
+    handleDeleteAll,
     validateFileName,
   };
 }

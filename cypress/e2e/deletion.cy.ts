@@ -135,4 +135,74 @@ describe('File and Folder Deletion Tests', () => {
     // 不应该有删除 API 调用
     cy.get('@deleteBlob').should('not.exist');
   });
+
+  it('[DEL-06] should delete all files with confirmation', () => {
+    // 点击删除全部按钮
+    cy.get('button[aria-label="Delete all files"]').click();
+
+    // 验证警告标题和内容
+    cy.contains('⚠️ Dangerous Operation').should('be.visible');
+    cy.contains('This is a destructive action that cannot be undone').should(
+      'be.visible'
+    );
+
+    // 验证删除按钮在输入确认文本前是禁用的
+    cy.get('button').contains('Delete').should('be.disabled');
+
+    // 输入错误的确认文本
+    cy.get('input[placeholder*="delete all"]').type('delete');
+    cy.get('button').contains('Delete').should('be.disabled');
+
+    // 输入正确的确认文本
+    cy.get('input[placeholder*="delete all"]').clear().type('delete all');
+    cy.get('button').contains('Delete').should('not.be.disabled');
+
+    // 确认删除
+    cy.get('button').contains('Delete').click();
+
+    // 验证所有文件和文件夹被删除
+    cy.contains('[role="treeitem"]', 'empty-folder').should('not.exist');
+    cy.contains('[role="treeitem"]', 'test-folder').should('not.exist');
+    cy.contains('[role="treeitem"]', 'root-file.txt').should('not.exist');
+
+    // 验证删除 API 调用
+    cy.wait('@deleteBlob').then((interception) => {
+      expect(interception.request.body.urls)
+        .to.be.an('array')
+        .that.has.length(4); // 所有文件和文件夹
+
+      // 验证所有 URL 都被包含在请求中
+      const urls = interception.request.body.urls as string[];
+      expect(urls.some((url) => url.includes('empty-folder'))).to.be.true;
+      expect(urls.some((url) => url.includes('test-folder/'))).to.be.true;
+      expect(urls.some((url) => url.includes('test-folder/nested.txt'))).to.be
+        .true;
+      expect(urls.some((url) => url.includes('root-file.txt'))).to.be.true;
+    });
+
+    // 验证编辑器显示默认提示文本
+    cy.contains('Select a file to edit').should('be.visible');
+
+    // 删除完成后移除loading状态
+    cy.get('.animate-spin').should('not.exist');
+  });
+
+  it('[DEL-07] should not delete all files when cancelled', () => {
+    // 点击删除全部按钮
+    cy.get('button[aria-label="Delete all files"]').click();
+
+    // 输入确认文本
+    cy.get('input[placeholder*="delete all"]').type('delete all');
+
+    // 点击取消按钮
+    cy.get('button').contains('Cancel').click();
+
+    // 验证所有文件和文件夹仍然存在
+    cy.contains('[role="treeitem"]', 'empty-folder').should('exist');
+    cy.contains('[role="treeitem"]', 'test-folder').should('exist');
+    cy.contains('[role="treeitem"]', 'root-file.txt').should('exist');
+
+    // 不应该有删除 API 调用
+    cy.get('@deleteBlob').should('not.exist');
+  });
 });
