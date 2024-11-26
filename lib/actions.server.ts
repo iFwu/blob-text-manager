@@ -6,7 +6,8 @@ import type {
   BlobResult,
   BlobFileResult,
   BlobFolderResult,
-} from '../types';
+  BlobOperations,
+} from '@/types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 
@@ -27,7 +28,9 @@ function handleEmptyContent(
   return content;
 }
 
-export async function listBlobs(): Promise<BlobFile[]> {
+export const listBlobs: BlobOperations['listBlobs'] = async (): Promise<
+  BlobFile[]
+> => {
   const startTime = Date.now();
   console.log(
     `[Server] List API request started at ${new Date(startTime).toISOString()}`
@@ -64,9 +67,11 @@ export async function listBlobs(): Promise<BlobFile[]> {
     `[Server] List API completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`
   );
   return processedBlobs;
-}
+};
 
-export async function getBlob(url: string): Promise<string> {
+export const getBlob: BlobOperations['getBlob'] = async (
+  url: string
+): Promise<string> => {
   const startTime = Date.now();
   console.log(
     `[Server] Get blob request started at ${new Date(startTime).toISOString()}`
@@ -86,12 +91,12 @@ export async function getBlob(url: string): Promise<string> {
     `[Server] Get blob completed at ${new Date(endTime).toISOString()} (${endTime - startTime}ms)`
   );
   return content;
-}
+};
 
-export async function putBlob(
+export const putBlob: BlobOperations['putBlob'] = async (
   pathname: string,
   content: string | File | null
-): Promise<BlobResult> {
+): Promise<BlobResult> => {
   const startTime = Date.now();
   console.log(
     `[Server] Put operation started at ${new Date(startTime).toISOString()}`
@@ -150,9 +155,11 @@ export async function putBlob(
     url: result.url,
     downloadUrl: result.downloadUrl,
   } satisfies BlobFileResult;
-}
+};
 
-export async function deleteBlob(urls: string | string[]) {
+export const deleteBlob: BlobOperations['deleteBlob'] = async (
+  urls: string | string[]
+) => {
   const startTime = Date.now();
   console.log(
     `[Server] Delete request started at ${new Date(startTime).toISOString()}`
@@ -166,4 +173,4 @@ export async function deleteBlob(urls: string | string[]) {
     `[Server] Delete completed at ${new Date(endTime).toISOString()} ` +
       `(${endTime - startTime}ms)`
   );
-}
+};

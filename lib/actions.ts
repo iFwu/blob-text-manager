@@ -1,4 +1,4 @@
-import type { BlobOperations } from '../types';
+import type { BlobOperations } from '@/types';
 
 /**
  * This is the entry point for blob management actions.

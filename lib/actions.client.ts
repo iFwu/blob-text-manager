@@ -18,7 +18,7 @@ import type {
   BlobFileResult,
   BlobFolderResult,
   BlobOperations,
-} from '../types';
+} from '@/types';
 
 const ZERO_WIDTH_SPACE = '\u200B';
 const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
@@ -40,7 +40,9 @@ function handleEmptyContent(
   return content;
 }
 
-export async function listBlobs(): Promise<BlobFile[]> {
+export const listBlobs: BlobOperations['listBlobs'] = async (): Promise<
+  BlobFile[]
+> => {
   const { blobs } = await list({ token });
   const fileMap = new Map<string, any>();
 
@@ -66,20 +68,22 @@ export async function listBlobs(): Promise<BlobFile[]> {
     uploadedAt: blob.uploadedAt,
     isDirectory: blob.pathname.endsWith('/') && blob.size === 0,
   }));
-}
+};
 
-export async function getBlob(url: string): Promise<string> {
+export const getBlob: BlobOperations['getBlob'] = async (
+  url: string
+): Promise<string> => {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch blob content');
   }
   return response.text();
-}
+};
 
-export async function putBlob(
+export const putBlob: BlobOperations['putBlob'] = async (
   pathname: string,
   content: string | File | null
-): Promise<BlobResult> {
+): Promise<BlobResult> => {
   const { blobs } = await list({ token });
   const existingFiles = blobs.filter(
     (blob) =>
@@ -115,9 +119,11 @@ export async function putBlob(
     url: result.url,
     downloadUrl: result.downloadUrl,
   } satisfies BlobFileResult;
-}
+};
 
-export async function deleteBlob(urls: string | string[]) {
+export const deleteBlob: BlobOperations['deleteBlob'] = async (
+  urls: string | string[]
+) => {
   const urlArray = Array.isArray(urls) ? urls : [urls];
   await del(urlArray, { token });
-}
+};

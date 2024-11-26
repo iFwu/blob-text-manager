@@ -18,6 +18,7 @@ describe('FileEditor', () => {
         content=""
         onSave={cy.stub().as('onSave')}
         isLoading={false}
+        onClose={cy.stub()}
       />
     );
 
@@ -32,6 +33,7 @@ describe('FileEditor', () => {
         content={content}
         onSave={cy.stub().as('onSave')}
         isLoading={false}
+        onClose={cy.stub()}
       />
     );
 
@@ -45,6 +47,7 @@ describe('FileEditor', () => {
         content="Initial content"
         onSave={cy.stub().as('onSave')}
         isLoading={false}
+        onClose={cy.stub()}
       />
     );
 
@@ -65,18 +68,26 @@ describe('FileEditor', () => {
         content=""
         onSave={cy.stub()}
         isLoading={true}
+        onClose={cy.stub()}
       />
     );
 
     cy.get('.animate-spin').should('exist');
   });
 
-  it('shows empty state when no file selected', () => {
+  it('handles close', () => {
     cy.mount(
-      <FileEditor file={null} content="" onSave={cy.stub()} isLoading={false} />
+      <FileEditor
+        file={mockFile}
+        content=""
+        onSave={cy.stub()}
+        isLoading={false}
+        onClose={cy.stub().as('onClose')}
+      />
     );
 
-    cy.contains('Select a file to edit').should('exist');
-    cy.get('textarea').should('not.exist');
+    cy.get('button').contains('Close').click();
+
+    cy.get('@onClose').should('have.been.called');
   });
 });

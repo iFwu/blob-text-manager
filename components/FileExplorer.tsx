@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { TreeView } from './ui/tree-view';
-import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { FileIcon, FolderIcon } from 'lucide-react';
+
+import { TreeView } from '@/components/ui/tree-view';
+import { DirectoryAction, FileAction } from '@/components/ui/tree-actions';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { BlobFile, TreeDataItem } from '@/types';
 import { useFileTree } from '@/hooks/useFileTree';
-import { DirectoryAction, FileAction } from './ui/tree-actions';
-import { FileIcon, FolderIcon } from 'lucide-react';
 
 interface FileExplorerProps {
   files: BlobFile[];

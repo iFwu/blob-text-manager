@@ -2,11 +2,12 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Split from 'react-split';
+import { Loader2 } from 'lucide-react';
+
 import FileExplorer from '@/components/FileExplorer';
 import CreateForm from '@/components/CreateForm';
 import FileEditor from '@/components/FileEditor';
 import { useFileOperations } from '@/hooks/useFileOperations';
-import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -90,6 +91,7 @@ export default function Home() {
                 file={selectedFile?.isDirectory ? null : selectedFile}
                 content={fileContent}
                 onSave={handleFileSave}
+                onClose={() => handleFileSelect(null)}
                 isLoading={isFileContentLoading}
               />
             </div>

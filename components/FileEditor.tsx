@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { BlobFile } from '../types';
 import { Loader2 } from 'lucide-react';
+
+import { BlobFile } from '@/types';
 
 interface FileEditorProps {
   file: BlobFile | null;
   content: string;
   onSave: (content: string) => void;
   isLoading?: boolean;
+  onClose: () => void;
 }
 
 const ZERO_WIDTH_SPACE = '\u200B';
@@ -16,6 +18,7 @@ export default function FileEditor({
   content,
   onSave,
   isLoading = false,
+  onClose,
 }: FileEditorProps) {
   const [editedContent, setEditedContent] = useState(content);
 
@@ -59,6 +62,12 @@ export default function FileEditor({
         onClick={handleSave}
       >
         Save
+      </button>
+      <button
+        className="bg-red-500 text-white rounded px-4 py-2"
+        onClick={onClose}
+      >
+        Close
       </button>
     </div>
   );
