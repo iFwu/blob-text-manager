@@ -121,6 +121,7 @@ describe('FileEditor', () => {
       </TestWrapper>
     );
 
+    cy.get('textarea').type(' modified');
     cy.get('button[aria-label="Save changes"]').click();
     cy.get('[role="alert"]').should('exist');
     cy.get('[role="alert"]').within(() => {
@@ -177,10 +178,14 @@ describe('FileEditor', () => {
       </TestWrapper>
     );
 
+    cy.get('textarea').type(' modified');
     cy.get('button[aria-label="Save changes"]').click();
     cy.get('button[aria-label="Saving..."]').should('be.disabled');
     cy.get('.animate-spin').should('exist');
     cy.get('button[aria-label="Saved!"]', { timeout: 3000 }).should('exist');
+    cy.get('button[aria-label="Save changes"]').should('be.disabled');
+
+    cy.get('textarea').type(' again');
     cy.get('button[aria-label="Save changes"]').should('be.enabled');
   });
 
@@ -189,7 +194,7 @@ describe('FileEditor', () => {
       <TestWrapper>
         <FileEditor
           file={mockFile}
-          content=""
+          content="initial"
           onSave={cy.stub().as('onSave')}
           isLoading={false}
           onClose={cy.stub()}
@@ -197,7 +202,7 @@ describe('FileEditor', () => {
       </TestWrapper>
     );
 
-    cy.get('textarea').should('have.value', '');
+    cy.get('textarea').clear();
     cy.get('button').contains('Save').click();
     cy.get('@onSave').should('have.been.calledWith', '');
   });
