@@ -248,9 +248,7 @@ export function useFileOperations() {
       });
 
       // 收集所有需要删除的文件 URL
-      const urlsToDelete = files
-        .filter((f) => f.url)
-        .map((f) => f.url!);
+      const urlsToDelete = files.filter((f) => f.url).map((f) => f.url!);
 
       if (urlsToDelete.length > 0) {
         await deleteBlob(urlsToDelete);

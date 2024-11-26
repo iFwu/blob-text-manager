@@ -40,7 +40,8 @@ export default function Home() {
 
   const [targetPath, setTargetPath] = useState<string>();
   const [isEditorDirty, setIsEditorDirty] = useState(false);
-  const [pendingOperation, setPendingOperation] = useState<PendingOperation | null>(null);
+  const [pendingOperation, setPendingOperation] =
+    useState<PendingOperation | null>(null);
 
   const handleSetCreateTarget = useCallback(
     (directoryPath: string) => {
@@ -106,7 +107,12 @@ export default function Home() {
 
       handleFileSelect(file);
     },
-    [handleFileSelect, isEditorDirty, selectedFile?.pathname, createPendingPromise]
+    [
+      handleFileSelect,
+      isEditorDirty,
+      selectedFile?.pathname,
+      createPendingPromise,
+    ]
   );
 
   const handleConfirmOperation = useCallback(() => {

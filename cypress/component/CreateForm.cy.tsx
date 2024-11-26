@@ -128,8 +128,10 @@ describe('CreateForm', () => {
     cy.get('.animate-spin').should('exist');
 
     // Success state
-    cy.get('button[aria-label="File created!"]', { timeout: 3000 }).should('exist');
-    
+    cy.get('button[aria-label="File created!"]', { timeout: 3000 }).should(
+      'exist'
+    );
+
     // Back to initial state
     cy.get('button[aria-label="Create new file"]').should('be.enabled');
   });
@@ -168,7 +170,9 @@ describe('CreateForm', () => {
     cy.get('input').type('test.txt');
     cy.get('button').first().click();
     // Should show error toast
-    cy.contains('Failed to create file. Error: Test error message').should('be.visible');
+    cy.contains('Failed to create file. Error: Test error message').should(
+      'be.visible'
+    );
   });
 
   it('disables form during processing', () => {
@@ -230,12 +234,15 @@ describe('CreateForm', () => {
 
     // Multiple slashes in input
     cy.get('input').clear().type('folder///subfolder///{enter}');
-    cy.get('@onCreateFile').should('have.been.calledWith', 'test/folder/subfolder/');
+    cy.get('@onCreateFile').should(
+      'have.been.calledWith',
+      'test/folder/subfolder/'
+    );
   });
 
   it('prevents concurrent operations', () => {
     const slowOperation = createAsyncStub(1000).as('onCreateFile');
-    
+
     cy.mount(
       <TestWrapper>
         <CreateForm

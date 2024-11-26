@@ -38,16 +38,16 @@ export function CloseConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
           <AlertDialogCancel asChild>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onDiscard}
               className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive bg-background"
             >
@@ -55,8 +55,8 @@ export function CloseConfirmDialog({
             </Button>
           </AlertDialogAction>
           <AlertDialogAction asChild>
-            <Button 
-              variant="default" 
+            <Button
+              variant="default"
               onClick={onSaveAndClose}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
@@ -68,4 +68,3 @@ export function CloseConfirmDialog({
     </AlertDialog>
   );
 }
-

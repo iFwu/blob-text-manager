@@ -216,8 +216,8 @@ const CreateForm = memo(function CreateForm({
                 fileButtonState === 'loading'
                   ? 'Creating file...'
                   : fileButtonState === 'success'
-                  ? 'File created!'
-                  : 'Create new file'
+                    ? 'File created!'
+                    : 'Create new file'
               }
             >
               {fileButtonState === 'loading' ? (
@@ -239,8 +239,8 @@ const CreateForm = memo(function CreateForm({
                 folderButtonState === 'loading'
                   ? 'Creating folder...'
                   : folderButtonState === 'success'
-                  ? 'Folder created!'
-                  : 'Create new folder'
+                    ? 'Folder created!'
+                    : 'Create new folder'
               }
             >
               {folderButtonState === 'loading' ? (
