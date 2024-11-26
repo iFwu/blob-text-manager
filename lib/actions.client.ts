@@ -20,25 +20,7 @@ import type {
   BlobOperations,
 } from '@/types';
 
-const ZERO_WIDTH_SPACE = '\u200B';
 const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
-
-function handleEmptyContent(
-  content: string | File | null,
-  pathname: string
-): string | File {
-  if (typeof content === 'string') {
-    return content.trim() === ''
-      ? ZERO_WIDTH_SPACE
-      : content.replace(/^\u200B/, '');
-  } else if (content instanceof File && content.size === 0) {
-    return new File([ZERO_WIDTH_SPACE], pathname, { type: content.type });
-  }
-  if (!content) {
-    return new File([ZERO_WIDTH_SPACE], pathname, { type: 'text/plain' });
-  }
-  return content;
-}
 
 export const listBlobs: BlobOperations['listBlobs'] = async (): Promise<
   BlobFile[]
@@ -82,7 +64,7 @@ export const getBlob: BlobOperations['getBlob'] = async (
 
 export const putBlob: BlobOperations['putBlob'] = async (
   pathname: string,
-  content: string | File | null
+  content?: string | File
 ): Promise<BlobResult> => {
   const { blobs } = await list({ token });
   const existingFiles = blobs.filter(
@@ -106,9 +88,7 @@ export const putBlob: BlobOperations['putBlob'] = async (
     } satisfies BlobFolderResult;
   }
 
-  content = handleEmptyContent(content, pathname);
-
-  const result = await put(pathname, content, {
+  const result = await put(pathname, content ?? '', {
     access: 'public',
     addRandomSuffix: true,
     token,

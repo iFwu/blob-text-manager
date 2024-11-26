@@ -6,8 +6,9 @@ import { Loader2 } from 'lucide-react';
 
 import FileExplorer from '@/components/FileExplorer';
 import CreateForm from '@/components/CreateForm';
-import FileEditor from '@/components/FileEditor';
+import FileEditor, { ZERO_WIDTH_SPACE } from '@/components/FileEditor';
 import { useFileOperations } from '@/hooks/useFileOperations';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Home() {
   const {
@@ -74,7 +75,11 @@ export default function Home() {
               <CreateForm
                 onCreateFile={(fileName) => {
                   setTargetPath(undefined);
-                  return handleFileSave('', fileName);
+                  return handleFileSave({
+                    content: ZERO_WIDTH_SPACE,
+                    pathname: fileName,
+                    isEditing: false,
+                  });
                 }}
                 currentDirectory={
                   selectedFile
@@ -90,7 +95,21 @@ export default function Home() {
                 key={selectedFile?.url}
                 file={selectedFile?.isDirectory ? null : selectedFile}
                 content={fileContent}
-                onSave={handleFileSave}
+                onSave={async (content) => {
+                  if (!selectedFile) {
+                    toast({
+                      title: 'Error',
+                      description: 'Please select a file to save',
+                      variant: 'destructive',
+                    });
+                    return;
+                  }
+                  await handleFileSave({
+                    content,
+                    pathname: selectedFile.pathname,
+                    isEditing: true,
+                  });
+                }}
                 onClose={() => handleFileSelect(null)}
                 isLoading={isFileContentLoading}
               />

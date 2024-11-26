@@ -1,6 +1,17 @@
 import { useState, useCallback, useMemo } from 'react';
 import { listBlobs, getBlob, putBlob, deleteBlob } from '@/lib/actions';
-import { BlobFile, ValidationResult } from '@/types';
+import type { BlobFile, ValidationResult } from '@/types';
+
+export interface ValidateFileNameParams {
+  pathname: string;
+  isEditing: boolean;
+}
+
+export interface SaveFileParams {
+  content: string;
+  pathname: string;
+  isEditing: boolean;
+}
 
 export function useFileOperations() {
   const [files, setFiles] = useState<BlobFile[]>([]);
@@ -47,16 +58,16 @@ export function useFileOperations() {
   }, []);
 
   const validateFileName = useCallback(
-    (name: string, isDirectory: boolean): ValidationResult => {
-      if (!name) {
+    ({ pathname, isEditing }: ValidateFileNameParams): ValidationResult => {
+      if (!pathname) {
         return { isValid: false, error: 'Please enter a name' };
       }
 
-      if (/[<>:"|?*\\]/.test(name)) {
+      if (/[<>:"|?*\\]/.test(pathname)) {
         return { isValid: false, error: 'Name contains invalid characters' };
       }
 
-      const parts = name.split('/').filter(Boolean);
+      const parts = pathname.split('/').filter(Boolean);
       if (parts.some((part) => part === '.' || part === '..')) {
         return {
           isValid: false,
@@ -66,21 +77,23 @@ export function useFileOperations() {
 
       const baseName = parts[parts.length - 1];
       const parentPath = parts.slice(0, -1).join('/');
-      const fullPath = name + (isDirectory ? '/' : '');
 
-      const conflictingFile = files.find((f) => {
-        const fParts = f.pathname.replace(/\/$/, '').split('/');
-        const fName = fParts[fParts.length - 1];
-        const fParent = fParts.slice(0, -1).join('/');
+      // 如果是编辑模式，跳过冲突检查
+      if (!isEditing) {
+        const conflictingFile = files.find((f) => {
+          const fParts = f.pathname.replace(/\/$/, '').split('/');
+          const fName = fParts[fParts.length - 1];
+          const fParent = fParts.slice(0, -1).join('/');
 
-        return fName === baseName && fParent === parentPath;
-      });
+          return fName === baseName && fParent === parentPath;
+        });
 
-      if (conflictingFile) {
-        return {
-          isValid: false,
-          error: 'File or folder already exists',
-        };
+        if (conflictingFile) {
+          return {
+            isValid: false,
+            error: 'File or folder already exists',
+          };
+        }
       }
 
       if (parts.length > 1) {
@@ -99,34 +112,45 @@ export function useFileOperations() {
   );
 
   const handleFileSave = useCallback(
-    async (content: string, fileName?: string) => {
+    async ({ content, pathname, isEditing }: SaveFileParams) => {
+      const isFolder = pathname.endsWith('/');
+
+      // 验证文件名
+      const validation = validateFileName({
+        pathname,
+        isEditing,
+      });
+
+      if (!validation.isValid) {
+        throw new Error(validation.error || 'Invalid file name');
+      }
+
+      const newFile: BlobFile = {
+        pathname,
+        size: isFolder ? 0 : content.length,
+        uploadedAt: new Date().toISOString(),
+        isDirectory: isFolder,
+      };
+
+      // 保存旧状态用于回滚
+      const previousState = {
+        files: [...files],
+        selectedFile,
+        fileContent,
+      };
+
+      // 乐观更新
+      if (!isEditing) {
+        setFiles((prevFiles) => [...prevFiles, newFile]);
+      }
+      if (!isFolder) {
+        setSelectedFile(newFile);
+        setFileContent(content);
+      }
+
       try {
-        const fileToSave = fileName || (selectedFile?.pathname ?? '');
-        if (!fileToSave) {
-          throw new Error('No file name provided for save operation');
-        }
-
-        const isFolder = fileToSave.endsWith('/');
-        const validation = validateFileName(fileToSave, isFolder);
-
-        if (!validation.isValid) {
-          throw new Error(validation.error || 'Invalid file name');
-        }
-
-        const newFile: BlobFile = {
-          pathname: fileToSave,
-          size: isFolder ? 0 : content.length,
-          uploadedAt: new Date().toISOString(),
-          isDirectory: isFolder,
-        };
-
-        // 立即更新 selectedFile，不等待保存完成
-        if (fileName) {
-          setSelectedFile(newFile);
-          setFiles((prevFiles) => [...prevFiles, newFile]);
-        }
-
-        const result = await putBlob(fileToSave, isFolder ? null : content);
+        // 执行实际的保存操作
+        const result = await putBlob(pathname, content);
 
         // 更新文件的实际 URL
         const updatedFile = {
@@ -137,26 +161,38 @@ export function useFileOperations() {
             : {}),
         };
 
-        if (fileName) {
-          setFiles((prevFiles) =>
-            prevFiles.map((f) => (f.pathname === fileToSave ? updatedFile : f))
-          );
-          setSelectedFile(updatedFile);
-        } else {
-          setFiles((prevFiles) =>
-            prevFiles.map((f) => (f.pathname === fileToSave ? updatedFile : f))
-          );
-          setSelectedFile(updatedFile);
-        }
-
+        // 更新最终状态
         if (!isFolder) {
-          setFileContent(content);
+          setFiles((prevFiles) => {
+            // 如果是编辑模式，更新已存在的文件
+            if (isEditing) {
+              return prevFiles.map((file) => {
+                if (file.pathname === pathname) {
+                  return updatedFile;
+                }
+                return file;
+              });
+            }
+            
+            // 如果是新建模式，替换临时文件为带 URL 的新文件
+            return prevFiles.map((file) => {
+              if (file === newFile) {
+                return updatedFile;
+              }
+              return file;
+            });
+          });
+          setSelectedFile(updatedFile);
         }
       } catch (error) {
-        throw error; // 让调用者处理错误
+        // 发生错误时回滚到之前的状态
+        setFiles(previousState.files);
+        setSelectedFile(previousState.selectedFile);
+        setFileContent(previousState.fileContent);
+        throw error;
       }
     },
-    [selectedFile, validateFileName]
+    [files, selectedFile, fileContent, validateFileName]
   );
 
   const handleFileDelete = useCallback(
