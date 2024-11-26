@@ -8,9 +8,10 @@ import {
 } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusIcon, FolderPlusIcon } from 'lucide-react';
+import { PlusIcon, FolderPlusIcon, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ValidateFileNameParams, ValidationResult } from '@/types';
+import { toast } from '@/components/ui/use-toast';
 
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
@@ -18,6 +19,8 @@ interface CreateFormProps {
   targetPath?: string;
   validateFileName: (params: ValidateFileNameParams) => ValidationResult;
 }
+
+type ButtonState = 'idle' | 'loading' | 'success';
 
 const CreateForm = memo(function CreateForm({
   onCreateFile,
@@ -28,10 +31,22 @@ const CreateForm = memo(function CreateForm({
   const [newName, setNewName] = useState('');
   const [prefixWidth, setPrefixWidth] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [fileButtonState, setFileButtonState] = useState<ButtonState>('idle');
+  const [folderButtonState, setFolderButtonState] =
+    useState<ButtonState>('idle');
   const prefixRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const successTimeoutRef = useRef<NodeJS.Timeout>();
 
   const effectiveDirectory = targetPath || currentDirectory;
+
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (prefixRef.current) {
@@ -51,8 +66,22 @@ const CreateForm = memo(function CreateForm({
     []
   );
 
+  const showSuccessState = useCallback((isDirectory: boolean) => {
+    const setState = isDirectory ? setFolderButtonState : setFileButtonState;
+    setState('success');
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+    successTimeoutRef.current = setTimeout(() => {
+      setState('idle');
+    }, 2000);
+  }, []);
+
   const handleSubmit = useCallback(
-    (isDirectory: boolean) => {
+    async (isDirectory: boolean) => {
+      const currentState = isDirectory ? folderButtonState : fileButtonState;
+      if (currentState === 'loading') return;
+
       if (!newName) {
         setError('Please enter a name');
         return;
@@ -76,12 +105,45 @@ const CreateForm = memo(function CreateForm({
         return;
       }
 
-      onCreateFile(fullPath);
-      setNewName('');
-      setError(null);
-      inputRef.current?.focus();
+      const setState = isDirectory ? setFolderButtonState : setFileButtonState;
+      setState('loading');
+      try {
+        await onCreateFile(fullPath);
+        setNewName('');
+        setError(null);
+        
+        // 在设置新状态前清除所有定时器
+        if (successTimeoutRef.current) {
+          clearTimeout(successTimeoutRef.current);
+          successTimeoutRef.current = undefined;
+        }
+        
+        showSuccessState(isDirectory);
+      } catch (error) {
+        console.error('Failed to create:', error);
+        let errorMessage = `Failed to create ${isDirectory ? 'folder' : 'file'}.`;
+        if (error instanceof Error) {
+          errorMessage += ` Error: ${error.message}`;
+        }
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setState('idle');
+      } finally {
+        inputRef.current?.focus();
+      }
     },
-    [newName, effectiveDirectory, onCreateFile, validateFileName]
+    [
+      newName,
+      effectiveDirectory,
+      onCreateFile,
+      validateFileName,
+      fileButtonState,
+      folderButtonState,
+      showSuccessState,
+    ]
   );
 
   const handleFormSubmit = useCallback(
@@ -102,62 +164,93 @@ const CreateForm = memo(function CreateForm({
     [handleSubmit]
   );
 
+  const isProcessing =
+    fileButtonState === 'loading' || folderButtonState === 'loading';
+
   return (
     <form onSubmit={handleFormSubmit} className="space-y-2">
-      <div className="flex relative">
-        {effectiveDirectory && (
-          <span
-            ref={prefixRef}
-            aria-label="current directory"
-            className={cn(
-              'inline-flex items-center absolute left-0 top-0 bottom-0',
-              'text-sm text-muted-foreground bg-muted',
-              'border border-r-0 border-input rounded-l-md',
-              'truncate px-3 font-mono'
-            )}
-          >
-            {effectiveDirectory.replace(/\/+$/, '')}/
-          </span>
-        )}
-        <Input
-          ref={inputRef}
-          type="text"
-          placeholder="Enter name... (Shift+Enter for folder)"
-          value={newName}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          className={cn(
-            'pr-[80px]',
-            effectiveDirectory && 'pl-[var(--prefix-width)]',
-            error && 'border-destructive focus-visible:ring-destructive'
+      <fieldset disabled={isProcessing}>
+        <div className="flex relative">
+          {effectiveDirectory && (
+            <span
+              ref={prefixRef}
+              aria-label="current directory"
+              className={cn(
+                'inline-flex items-center absolute left-0 top-0 bottom-0',
+                'text-sm text-muted-foreground bg-muted',
+                'border border-r-0 border-input rounded-l-md',
+                'truncate px-3 font-mono'
+              )}
+            >
+              {effectiveDirectory.replace(/\/+$/, '')}/
+            </span>
           )}
-          style={
-            { '--prefix-width': `${prefixWidth + 10}px` } as React.CSSProperties
-          }
-        />
-        <div className="absolute right-0 top-0 bottom-0 flex">
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="rounded-none hover:bg-transparent"
-            onClick={() => handleSubmit(false)}
-            title="Create File (Enter)"
-          >
-            <PlusIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            className="rounded-l-none"
-            onClick={() => handleSubmit(true)}
-            title="Create Folder (Shift+Enter)"
-          >
-            <FolderPlusIcon className="h-4 w-4" />
-          </Button>
+          <Input
+            ref={inputRef}
+            type="text"
+            value={newName}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter name... (Shift+Enter for folder)"
+            aria-invalid={!!error}
+            aria-describedby={error ? 'name-error' : undefined}
+            className={cn(
+              'pr-[80px]',
+              effectiveDirectory && 'pl-[var(--prefix-width)]',
+              error && 'border-destructive focus-visible:ring-destructive'
+            )}
+            style={
+              { '--prefix-width': `${prefixWidth + 10}px` } as React.CSSProperties
+            }
+            disabled={isProcessing}
+          />
+          <div className="absolute right-0 top-0 bottom-0 flex">
+            <Button
+              type="submit"
+              size="icon"
+              variant="ghost"
+              className="rounded-none hover:bg-transparent"
+              disabled={isProcessing}
+              title="Create File (Enter)"
+              aria-label="Create new file"
+            >
+              {fileButtonState === 'loading' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : fileButtonState === 'success' ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <PlusIcon className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              className="rounded-l-none"
+              disabled={isProcessing}
+              onClick={() => handleSubmit(true)}
+              title="Create Folder (Shift+Enter)"
+              aria-label="Create new folder"
+            >
+              {folderButtonState === 'loading' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : folderButtonState === 'success' ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <FolderPlusIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
-      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
+        {error && (
+          <p
+            id="name-error"
+            className="text-sm text-destructive mt-1"
+            role="alert"
+          >
+            {error}
+          </p>
+        )}
+      </fieldset>
     </form>
   );
 });
