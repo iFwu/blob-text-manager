@@ -69,6 +69,9 @@ jobs:
           NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN: 'vercel_blob_test_token'
         run: pnpm coverage
 
+      - name: Convert Coverage to JSON
+        run: npx nyc report --reporter=json-summary
+
       - name: Generate Coverage Badge
         uses: jaywcjlove/coverage-badges-cli@main
         with:
@@ -97,17 +100,3 @@ jobs:
         with:
           name: cypress-screenshots
           path: cypress/screenshots
-
-      - name: Upload Videos
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-videos
-          path: cypress/videos
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: cypress/results/
