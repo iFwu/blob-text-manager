@@ -79,7 +79,7 @@ export function useFileTree({
 
         const fileItem: TreeDataItem = {
           id: file.pathname,
-          name: parts[parts.length - 1],
+          name: parts[parts.length - 1] || '',
           uploadedAt: file.uploadedAt,
           actions: renderFileActions(file),
           onClick: () => onFileSelect(file),

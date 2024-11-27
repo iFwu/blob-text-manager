@@ -22,6 +22,10 @@ import { createFolder, del, list, put } from '@vercel/blob';
 
 const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
 
+if (!token) {
+  throw new Error('NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN is not set');
+}
+
 export const listBlobs: BlobOperations['listBlobs'] = async (): Promise<
   BlobFile[]
 > => {

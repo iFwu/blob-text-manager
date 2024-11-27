@@ -41,7 +41,7 @@ export default function Home() {
     validateFileName,
   } = useFileOperations();
 
-  const [targetPath, setTargetPath] = useState<string>();
+  const [targetPath, setTargetPath] = useState<string | null>(null);
   const [isEditorDirty, setIsEditorDirty] = useState(false);
   const [pendingOperation, setPendingOperation] =
     useState<PendingOperation | null>(null);
@@ -86,7 +86,7 @@ export default function Home() {
         return promise;
       }
 
-      setTargetPath(undefined);
+      setTargetPath(null);
       await handleFileSave({
         content: ZERO_WIDTH_SPACE,
         pathname: fileName,
@@ -110,9 +110,9 @@ export default function Home() {
       }
 
       if (file !== null) {
-        setTargetPath(undefined);
+        setTargetPath(null);
       }
-      handleFileSelect(file);
+      return handleFileSelect(file);
     },
     [
       handleFileSelect,
@@ -135,7 +135,7 @@ export default function Home() {
         promise.resolve();
         break;
       case 'create':
-        setTargetPath(undefined);
+        setTargetPath(null);
         handleFileSave({
           content: ZERO_WIDTH_SPACE,
           pathname: data,

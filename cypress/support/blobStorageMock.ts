@@ -90,6 +90,10 @@ export class BlobStorageMock {
     // Mock put blob (file)
     cy.intercept('PUT', /blob\.vercel-storage\.com\/(?!.*\/$).*/, (req) => {
       const pathname = req.url.split('blob.vercel-storage.com/')[1];
+      if (!pathname) {
+        req.reply({ statusCode: 404 });
+        return;
+      }
       const url = this.generateUrl(pathname);
       const downloadUrl = `${url}?download=1`;
       const content = req.body;
@@ -119,7 +123,7 @@ export class BlobStorageMock {
     // Mock put blob (folder)
     cy.intercept('PUT', /blob\.vercel-storage\.com\/.*\/$/, (req) => {
       const pathname = req.url.split('blob.vercel-storage.com/')[1];
-      const normalizedPathname = pathname.endsWith('/')
+      const normalizedPathname = pathname?.endsWith('/')
         ? pathname
         : `${pathname}/`;
       const url = this.generateUrl(normalizedPathname, true);
@@ -158,7 +162,7 @@ export class BlobStorageMock {
     // Mock get blob content
     cy.intercept('GET', /mock\.blob\.vercel-storage\.com.*/, (req) => {
       const url = req.url.split('?')[0];
-      const file = this.files.get(url);
+      const file = url ? this.files.get(url) : null;
       if (!file) {
         req.reply({ statusCode: 404 });
         return;

@@ -1,3 +1,11 @@
+import {
+  type FormEvent,
+  useState,
+  useRef,
+  useCallback,
+  memo,
+  useLayoutEffect,
+} from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
@@ -5,19 +13,11 @@ import { useAnimatedState } from '@/hooks/useAnimatedState';
 import { cn } from '@/lib/utils';
 import type { ValidateFileNameParams, ValidationResult } from '@/types';
 import { Check, FolderPlusIcon, Loader2, PlusIcon } from 'lucide-react';
-import {
-  type FormEvent,
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
 
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
   currentDirectory: string;
-  targetPath?: string;
+  targetPath: string | null;
   validateFileName: (params: ValidateFileNameParams) => ValidationResult;
 }
 
@@ -48,7 +48,8 @@ const CreateForm = memo(function CreateForm({
 
   const effectiveDirectory = targetPath || currentDirectory;
 
-  useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: changing prefix width can affect layout
+  useLayoutEffect(() => {
     if (prefixRef.current) {
       const width = prefixRef.current.getBoundingClientRect().width;
       setPrefixWidth(width);
@@ -110,7 +111,9 @@ const CreateForm = memo(function CreateForm({
         }
       } catch (error) {
         console.error('Failed to create:', error);
-        let errorMessage = `Failed to create ${isDirectory ? 'folder' : 'file'}.`;
+        let errorMessage = `Failed to create ${
+          isDirectory ? 'folder' : 'file'
+        }.`;
         if (error instanceof Error) {
           errorMessage += ` Error: ${error.message}`;
         }
