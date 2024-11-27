@@ -3,6 +3,7 @@
 [![Code Quality Check](https://github.com/iFwu/vercel-blob-manager/actions/workflows/check.yml/badge.svg)](https://github.com/iFwu/vercel-blob-manager/actions/workflows/check.yml)
 [![Cypress Tests](https://github.com/iFwu/vercel-blob-manager/actions/workflows/cypress.yml/badge.svg)](https://github.com/iFwu/vercel-blob-manager/actions/workflows/cypress.yml)
 [![Coverage](https://ifwu.github.io/blob-text-manager/coverage/coverage.svg)](https://ifwu.github.io/blob-text-manager/coverage/)
+[![wakatime](https://wakatime.com/badge/user/f0e08818-b0bc-4d4f-88bd-328d717e0c9f/project/72746a9f-3d32-43d2-af56-c5ef51ee3c43.svg)](https://wakatime.com/badge/user/f0e08818-b0bc-4d4f-88bd-328d717e0c9f/project/72746a9f-3d32-43d2-af56-c5ef51ee3c43)
 
 A specialized file management application built on Vercel Blob Storage. This tool provides a clean, efficient interface for managing files, making it perfect for content management systems, static assets, or any file-based workflow.
 
