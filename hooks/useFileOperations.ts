@@ -90,7 +90,7 @@ export function useFileOperations() {
         }
 
         if (parts.length > 1) {
-          const parentDirPath = parts.slice(0, -1).join('/') + '/';
+          const parentDirPath = `${parts.slice(0, -1).join('/')}/`;
           const parentExists = files.some(
             (f) => f.isDirectory && f.pathname === parentDirPath
           );
@@ -206,14 +206,16 @@ export function useFileOperations() {
         // 添加正在删除的文件到状态
         setDeletingFiles((prev) => {
           const newSet = new Set(prev);
-          filesToDelete.forEach((f) => newSet.add(f.pathname));
+          for (const f of filesToDelete) {
+            newSet.add(f.pathname);
+          }
           return newSet;
         });
 
         // 将多个单独的删除请求合并成一个批量删除
         const urlsToDelete = filesToDelete
           .filter((f) => f.url)
-          .map((f) => f.url!);
+          .map((f) => f.url as string);
 
         if (urlsToDelete.length > 0) {
           await deleteBlob(urlsToDelete);
@@ -222,7 +224,9 @@ export function useFileOperations() {
         // 删除完成后移除loading状态
         setDeletingFiles((prev) => {
           const newSet = new Set(prev);
-          filesToDelete.forEach((f) => newSet.delete(f.pathname));
+          for (const f of filesToDelete) {
+            newSet.delete(f.pathname);
+          }
           return newSet;
         });
       }
@@ -243,12 +247,16 @@ export function useFileOperations() {
       // 添加所有文件到删除状态
       setDeletingFiles((prev) => {
         const newSet = new Set(prev);
-        files.forEach((f) => newSet.add(f.pathname));
+        for (const f of files) {
+          newSet.add(f.pathname);
+        }
         return newSet;
       });
 
       // 收集所有需要删除的文件 URL
-      const urlsToDelete = files.filter((f) => f.url).map((f) => f.url!);
+      const urlsToDelete = files
+        .filter((f) => f.url)
+        .map((f) => f.url as string);
 
       if (urlsToDelete.length > 0) {
         await deleteBlob(urlsToDelete);

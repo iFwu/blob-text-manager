@@ -38,14 +38,14 @@ export function useFileTree({
       const directories = new Map<string, TreeDataItem>();
       const rootItems: TreeDataItem[] = [];
 
-      files.forEach((file) => {
-        if (!file.isDirectory) return;
+      for (const file of files) {
+        if (!file.isDirectory) continue;
         const parts = file.pathname.split('/');
         let currentPath = '';
         let currentArray = rootItems;
 
-        parts.forEach((part) => {
-          if (part === '') return;
+        for (const part of parts) {
+          if (part === '') continue;
           currentPath = currentPath ? `${currentPath}/${part}` : part;
 
           if (!directories.has(currentPath)) {
@@ -61,21 +61,21 @@ export function useFileTree({
             directories.set(currentPath, dirItem);
             currentArray.push(dirItem);
           }
-          currentArray = directories.get(currentPath)!.children!;
-        });
-      });
+          currentArray = directories.get(currentPath)?.children ?? rootItems;
+        }
+      }
 
-      files.forEach((file) => {
-        if (file.isDirectory) return;
+      for (const file of files) {
+        if (file.isDirectory) continue;
         const parts = file.pathname.split('/');
         let currentPath = '';
         let currentArray = rootItems;
 
-        parts.slice(0, -1).forEach((part) => {
-          if (part === '') return;
+        for (const part of parts.slice(0, -1)) {
+          if (part === '') continue;
           currentPath = currentPath ? `${currentPath}/${part}` : part;
           currentArray = directories.get(currentPath)?.children || currentArray;
-        });
+        }
 
         const fileItem: TreeDataItem = {
           id: file.pathname,
@@ -85,15 +85,15 @@ export function useFileTree({
           onClick: () => onFileSelect(file),
         };
         currentArray.push(fileItem);
-      });
+      }
 
       const sortRecursively = (items: TreeDataItem[]) => {
         const sortedItems = sortItems(items);
-        sortedItems.forEach((item) => {
+        for (const item of sortedItems) {
           if (Array.isArray(item.children)) {
             item.children = sortRecursively(item.children);
           }
-        });
+        }
         return sortedItems;
       };
 

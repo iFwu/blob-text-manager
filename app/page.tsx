@@ -17,10 +17,13 @@ import { Button } from '../components/ui/button';
 
 type PendingOperation = {
   type: 'select' | 'create';
-  data: any;
+  data: {
+    fileName?: string;
+    file?: BlobFile | null;
+  };
   promise: {
     resolve: (value: void | PromiseLike<void>) => void;
-    reject: (reason?: any) => void;
+    reject: (reason?: Error) => void;
   };
   confirmed: boolean;
 };
@@ -57,7 +60,7 @@ export default function Home() {
 
   const createPendingPromise = useCallback(() => {
     let resolver: ((value: void | PromiseLike<void>) => void) | undefined;
-    let rejecter: ((reason?: any) => void) | undefined;
+    let rejecter: ((reason?: Error) => void) | undefined;
 
     const promise = new Promise<void>((resolve, reject) => {
       resolver = resolve;
@@ -79,7 +82,7 @@ export default function Home() {
         const { promise, resolve, reject } = createPendingPromise();
         setPendingOperation({
           type: 'create',
-          data: fileName,
+          data: { fileName },
           promise: { resolve, reject },
           confirmed: false,
         });
@@ -102,7 +105,7 @@ export default function Home() {
         const { promise, resolve, reject } = createPendingPromise();
         setPendingOperation({
           type: 'select',
-          data: file,
+          data: { file },
           promise: { resolve, reject },
           confirmed: false,
         });
@@ -131,14 +134,15 @@ export default function Home() {
 
     switch (type) {
       case 'select':
-        handleFileSelect(data);
+        handleFileSelect(data as BlobFile | null);
         promise.resolve();
         break;
       case 'create':
         setTargetPath(null);
+        if (!data.fileName) throw new Error('File name is required');
         handleFileSave({
           content: ZERO_WIDTH_SPACE,
-          pathname: data,
+          pathname: data.fileName,
           isEditing: false,
         })
           .then(promise.resolve)
@@ -216,7 +220,7 @@ export default function Home() {
               <FileEditor
                 key={selectedFile?.pathname}
                 file={selectedFile?.isDirectory ? null : selectedFile}
-                content={fileContent}
+                content={fileContent === ZERO_WIDTH_SPACE ? '' : fileContent}
                 onSave={async (content) => {
                   if (!selectedFile) {
                     toast({

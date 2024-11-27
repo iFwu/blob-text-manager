@@ -53,12 +53,12 @@ export default function FileExplorer({
       </div>
     ),
     renderDirectoryActions: (path) => {
-      const dirFile = files.find((f) => f.pathname === path + '/');
+      const dirFile = files.find((f) => f.pathname === `${path}/`);
       return (
         <div className="flex items-center">
           <DirectoryAction
             onDelete={() => dirFile && handleDeleteClick(dirFile)}
-            onAdd={() => onSetCreateTarget(path + '/')}
+            onAdd={() => onSetCreateTarget(`${path}/`)}
             onFileSelect={onFileSelect}
           />
         </div>

@@ -9,6 +9,7 @@ export default defineConfig({
   },
   e2e: {
     experimentalMemoryManagement: true,
+    // biome-ignore lint/complexity/useLiteralKeys: typescript need use string keys to get index signature
     defaultCommandTimeout: process.env['CI'] ? 10000 : 3000,
     env: {
       NEXT_PUBLIC_IS_TEST: 'true',

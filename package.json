@@ -16,7 +16,7 @@
     "e2e:ci": "NODE_ENV=test NEXT_PUBLIC_IS_TEST=true start-server-and-test \"NODE_ENV=test NEXT_PUBLIC_IS_TEST=true next start\" http://localhost:3000 \"cypress run --e2e\"",
     "component": "NODE_ENV=test cypress open --component",
     "component:headless": "NODE_ENV=test cypress run --component",
-    "typecheck": "tsc --noEmit"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -52,7 +52,7 @@
   "packageManager": "pnpm@9.14.2",
   "lint-staged": {
     "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc,css,md}": [
-      "biome format --write --no-errors-on-unmatched"
+      "biome check --write --no-errors-on-unmatched"
     ]
   }
 }

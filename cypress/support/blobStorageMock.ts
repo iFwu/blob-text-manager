@@ -9,8 +9,19 @@ interface MockFile {
   isFolder?: boolean;
 }
 
+interface MockFileData {
+  url: string;
+  downloadUrl: string;
+  pathname: string;
+  contentType: string;
+  contentDisposition: string;
+  content?: string;
+  size: number;
+  uploadedAt: string;
+}
+
 export class BlobStorageMock {
-  private files = new Map<string, any>();
+  private files = new Map<string, MockFileData>();
 
   private generateUrl(pathname: string, isFolder = false) {
     const cleanPath = pathname.replace(/\/+$/, '');
@@ -36,7 +47,7 @@ export class BlobStorageMock {
    * Add files to the mock storage
    */
   addFiles(files: MockFile[]) {
-    files.forEach((file) => {
+    for (const file of files) {
       const url = this.generateUrl(file.pathname, file.isFolder);
       const downloadUrl = `${url}?download=1`;
 
@@ -65,7 +76,7 @@ export class BlobStorageMock {
           uploadedAt: new Date().toISOString(),
         });
       }
-    });
+    }
 
     return this;
   }
@@ -149,7 +160,9 @@ export class BlobStorageMock {
     // Mock delete blob
     cy.intercept('POST', 'https://blob.vercel-storage.com/delete', (req) => {
       const urls = req.body.urls;
-      urls.forEach((url: string) => this.files.delete(url));
+      for (const url of urls) {
+        this.files.delete(url);
+      }
       req.reply({
         statusCode: 200,
         headers: {

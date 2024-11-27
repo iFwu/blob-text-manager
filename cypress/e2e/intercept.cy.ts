@@ -29,7 +29,7 @@ describe('Blob API Interceptor Tests', () => {
 
       cy.wait('@putFile').then((interception) => {
         expect(interception.response?.statusCode).to.equal(200);
-        const { url } = interception.response?.body;
+        const url = interception.response?.body.url;
 
         cy.window().then((win) => {
           return win.fetch(url);
@@ -66,7 +66,7 @@ describe('Blob API Interceptor Tests', () => {
 
       cy.wait('@putFolder').then((interception) => {
         expect(interception.response?.statusCode).to.equal(200);
-        const { url } = interception.response?.body;
+        const url = interception.response?.body.url;
         expect(url).to.equal(
           `https://mock.blob.vercel-storage.com/${folderName}/`
         );

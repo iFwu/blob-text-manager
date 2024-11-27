@@ -7,7 +7,13 @@ import type {
   BlobOperations,
   BlobResult,
 } from '@/types';
-import { createFolder, del, list, put } from '@vercel/blob';
+import {
+  createFolder,
+  del,
+  list,
+  put,
+  type ListBlobResultBlob,
+} from '@vercel/blob';
 
 export const listBlobs: BlobOperations['listBlobs'] = async (): Promise<
   BlobFile[]
@@ -19,8 +25,8 @@ export const listBlobs: BlobOperations['listBlobs'] = async (): Promise<
 
   const { blobs } = await list();
 
-  const fileMap = new Map<string, any>();
-  blobs.forEach((blob) => {
+  const fileMap = new Map<string, ListBlobResultBlob>();
+  for (const blob of blobs) {
     const pathWithoutSuffix = blob.pathname.replace(
       /-[a-zA-Z0-9]{21}(\.[^.]+)?$/,
       '$1'
@@ -32,14 +38,14 @@ export const listBlobs: BlobOperations['listBlobs'] = async (): Promise<
     ) {
       fileMap.set(pathWithoutSuffix, blob);
     }
-  });
+  }
 
   const processedBlobs = Array.from(fileMap.values()).map((blob) => ({
     pathname: blob.pathname.replace(/-[a-zA-Z0-9]{21}(\.[^.]+)?$/, '$1'),
     url: blob.url,
     downloadUrl: blob.downloadUrl,
     size: blob.size,
-    uploadedAt: blob.uploadedAt,
+    uploadedAt: blob.uploadedAt.toISOString(),
     isDirectory: blob.pathname.endsWith('/') && blob.size === 0,
   }));
 

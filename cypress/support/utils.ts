@@ -1,7 +1,7 @@
 export const createAsyncStub = <T = void>(
   delay = 300,
   returnValue?: T
-): Cypress.Agent<sinon.SinonStub<any[], Promise<T>>> => {
+): Cypress.Agent<sinon.SinonStub<unknown[], Promise<T>>> => {
   const stub = cy.stub();
   stub.callsFake(
     () =>

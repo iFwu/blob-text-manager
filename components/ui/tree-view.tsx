@@ -112,7 +112,7 @@ export function TreeView({
 
               return (
                 <div
-                  key={i}
+                  key={`indent-${item.id}-${level}`}
                   className={cn('absolute w-px bg-border', 'left-[12px]')}
                   style={{
                     left: `${(i + 1) * INDENT_WIDTH - 1}px`,
@@ -134,6 +134,12 @@ export function TreeView({
             marginLeft: level > 0 ? `${level * INDENT_WIDTH}px` : undefined,
           }}
           onClick={() => handleItemClick(item)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleItemClick(item);
+            }
+          }}
           onMouseEnter={() => setHoveredItemId(item.id)}
           onMouseLeave={() => setHoveredItemId(null)}
           role="presentation"
@@ -176,7 +182,7 @@ export function TreeView({
           </div>
         </div>
         {isDirectory && isExpanded && (
-          <div role="group" aria-label={`${item.name} contents`}>
+          <fieldset aria-label={`${item.name} contents`}>
             {item.children?.map((child, index) =>
               renderTreeItem(
                 child,
@@ -185,7 +191,7 @@ export function TreeView({
                 [...parentIsLast, isLastItem]
               )
             )}
-          </div>
+          </fieldset>
         )}
       </div>
     );

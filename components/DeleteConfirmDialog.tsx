@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;
@@ -26,12 +26,15 @@ export function DeleteConfirmDialog({
 }: DeleteConfirmDialogProps) {
   const [confirmText, setConfirmText] = useState('');
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' && !isDeleteAllType) {
-      onConfirm();
-      onOpenChange(false);
-    }
-  };
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !isDeleteAllType) {
+        onConfirm();
+        onOpenChange(false);
+      }
+    },
+    [onConfirm, onOpenChange]
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -41,7 +44,7 @@ export function DeleteConfirmDialog({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onConfirm]);
+  }, [isOpen, handleKeyDown]);
 
   const isDeleteAllType = itemType === 'all';
   const isConfirmValid = !isDeleteAllType || confirmText === 'delete all';

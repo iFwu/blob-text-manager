@@ -29,10 +29,10 @@ class TimeoutError extends Error {
 }
 
 // 超时处理包装函数
-async function withTimeout<T>(
+async function withTimeout<T, Args extends unknown[]>(
   operation: string,
-  fn: (...args: any[]) => Promise<T>,
-  ...args: any[]
+  fn: (...args: Args) => Promise<T>,
+  ...args: Args
 ): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => {

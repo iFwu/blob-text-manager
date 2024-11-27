@@ -6,8 +6,27 @@ on:
   pull_request:
     branches: [main]
 
+# Ensure this workflow waits for check workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  wait-for-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for check workflow
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+          check-name: 'Type Check & Lint'
+          verbose: true
+          allowed-conclusions: success
+
   cypress-run:
+    needs: wait-for-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

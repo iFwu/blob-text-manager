@@ -19,4 +19,6 @@ import { blobStorageMock } from './blobStorageMock';
 import 'cypress-real-events';
 
 // Add to global scope
-(global as any).blobStorageMock = blobStorageMock;
+(
+  global as unknown as { blobStorageMock: typeof blobStorageMock }
+).blobStorageMock = blobStorageMock;

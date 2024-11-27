@@ -15,12 +15,12 @@ describe('File Creation Validation Tests', () => {
   it('[FCV-01] should not create file with invalid characters', () => {
     const invalidChars = ['<', '>', ':', '"', '|', '?', '*', '\\'];
 
-    invalidChars.forEach((char) => {
+    for (const char of invalidChars) {
       cy.get("input[placeholder*='Enter name']")
         .clear()
         .type(`test${char}file.txt{enter}`);
       cy.contains('Name contains invalid characters').should('be.visible');
-    });
+    }
   });
 
   it('[FCV-02] should not create file in non-existent directory', () => {
