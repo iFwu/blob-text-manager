@@ -1,6 +1,6 @@
 import FileEditor from '@/components/FileEditor';
-import type { BlobFile } from '@/types';
 import { Toaster } from '@/components/ui/toaster';
+import type { BlobFile } from '@/types';
 import { createAsyncStub } from '../support/utils';
 
 describe('FileEditor', () => {

@@ -1,5 +1,1 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-pnpm biome check --apply
-pnpm biome format --write
+pnpm lint-staged

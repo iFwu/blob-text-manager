@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { TrashIcon, PlusIcon } from 'lucide-react';
+import { PlusIcon, TrashIcon } from 'lucide-react';
 
 interface FileActionProps {
   onDelete: (e: React.MouseEvent) => void;

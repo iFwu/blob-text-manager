@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Loader2, Save, X, Check } from 'lucide-react';
+import { Check, Loader2, Save, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import type { BlobFile } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { toast } from '@/components/ui/use-toast';
-import { cn } from '@/lib/utils';
-import { useAnimatedState } from '@/hooks/useAnimatedState';
 import { CloseConfirmDialog } from '@/components/CloseConfirmDialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/use-toast';
+import { useAnimatedState } from '@/hooks/useAnimatedState';
+import { cn } from '@/lib/utils';
+import type { BlobFile } from '@/types';
 
 interface FileEditorProps {
   file: BlobFile | null;
