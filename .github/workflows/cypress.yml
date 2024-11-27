@@ -69,21 +69,27 @@ jobs:
           NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN: 'vercel_blob_test_token'
         run: pnpm coverage
 
+      - name: Generate Coverage Badge
+        uses: jaywcjlove/coverage-badges-cli@main
+        with:
+          source: coverage/coverage-summary.json
+          output: coverage/coverage.svg
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./coverage
+          destination_dir: coverage
+          keep_files: true
+
       - name: Upload Coverage Reports
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
           path: coverage/
-
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
 
       - name: Upload Screenshots
         if: failure()
