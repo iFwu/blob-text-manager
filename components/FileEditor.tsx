@@ -122,7 +122,6 @@ export default function FileEditor({
     <Card
       key={editorKey}
       className="w-full h-full flex flex-col relative"
-      // biome-ignore lint/a11y/useSemanticElements: we need to use card as a semantic element to wrap the card
       role="region"
       aria-label="File editor"
     >

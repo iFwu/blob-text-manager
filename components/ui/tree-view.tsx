@@ -182,7 +182,7 @@ export function TreeView({
           </div>
         </div>
         {isDirectory && isExpanded && (
-          <fieldset aria-label={`${item.name} contents`}>
+          <div role="group" aria-label={`${item.name} contents`}>
             {item.children?.map((child, index) =>
               renderTreeItem(
                 child,
@@ -191,7 +191,7 @@ export function TreeView({
                 [...parentIsLast, isLastItem]
               )
             )}
-          </fieldset>
+          </div>
         )}
       </div>
     );
