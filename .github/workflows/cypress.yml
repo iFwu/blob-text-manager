@@ -93,13 +93,6 @@ jobs:
           destination_dir: coverage
           keep_files: true
 
-      - name: Upload Coverage Reports
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-report
-          path: coverage/
-
       - name: Upload Screenshots
         if: failure()
         uses: actions/upload-artifact@v3
