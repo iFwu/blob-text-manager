@@ -22,7 +22,6 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 20
           check-name: 'Type Check & Lint'
-          verbose: true
           allowed-conclusions: success
 
   cypress-run:

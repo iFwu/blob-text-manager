@@ -19,11 +19,11 @@ import type {
   BlobResult,
 } from '@/types';
 import {
+  type ListBlobResultBlob,
   createFolder,
   del,
   list,
   put,
-  type ListBlobResultBlob,
 } from '@vercel/blob';
 
 const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;

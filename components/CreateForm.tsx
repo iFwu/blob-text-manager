@@ -1,11 +1,3 @@
-import {
-  type FormEvent,
-  useState,
-  useRef,
-  useCallback,
-  memo,
-  useLayoutEffect,
-} from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
@@ -13,6 +5,14 @@ import { useAnimatedState } from '@/hooks/useAnimatedState';
 import { cn } from '@/lib/utils';
 import type { ValidateFileNameParams, ValidationResult } from '@/types';
 import { Check, FolderPlusIcon, Loader2, PlusIcon } from 'lucide-react';
+import {
+  type FormEvent,
+  memo,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
 interface CreateFormProps {
   onCreateFile: (fileName: string) => Promise<void>;
