@@ -19,4 +19,4 @@
   ],
   "reporter": ["text", "html", "lcov"],
   "report-dir": "coverage"
-} 
+}
