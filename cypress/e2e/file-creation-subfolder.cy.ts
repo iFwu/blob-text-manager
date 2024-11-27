@@ -81,7 +81,7 @@ describe('Subfolder File Creation Tests', () => {
     // 使用 realHover 来真实模拟鼠标悬停
     cy.contains('[role="treeitem"]', 'folder')
       .realHover()
-      .find('button[aria-label="Create file in folder"]')
+      .find('button[aria-label="Add path to create target"]')
       .click();
 
     // 输入文件名并按回车
@@ -124,7 +124,7 @@ describe('Subfolder File Creation Tests', () => {
     // 使用 [role="presentation"] 来避免选择到子文件夹
     cy.contains('[role="presentation"]', 'folder')
       .realHover()
-      .find('button[aria-label="Create file in folder"]')
+      .find('button[aria-label="Add path to create target"]')
       .click();
 
     // 验证当前目录前缀显示正确

@@ -86,7 +86,7 @@ describe('Folder Creation Tests', () => {
     // 先点击 folder 设置当前目录 - 使用 ARIA 标签
     cy.contains('[role="presentation"]', 'folder')
       .realHover()
-      .find('button[aria-label="Create file in folder"]')
+      .find('button[aria-label="Add path to create target"]')
       .click();
 
     // 创建文件夹
