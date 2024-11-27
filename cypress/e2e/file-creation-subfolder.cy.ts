@@ -78,9 +78,8 @@ describe('Subfolder File Creation Tests', () => {
   });
 
   it('[FCS-03] creates file in subfolder via folder add button', () => {
-    // 使用 realHover 来真实模拟鼠标悬停
     cy.contains('[role="treeitem"]', 'folder')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Add path to create target"]')
       .click();
 
@@ -123,7 +122,7 @@ describe('Subfolder File Creation Tests', () => {
     // 点击 folder 的按钮，设置当前目录
     // 使用 [role="presentation"] 来避免选择到子文件夹
     cy.contains('[role="presentation"]', 'folder')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Add path to create target"]')
       .click();
 

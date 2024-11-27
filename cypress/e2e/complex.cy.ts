@@ -75,7 +75,7 @@ describe('Complex File Operations Tests', () => {
 
     // 设置前缀
     cy.contains('[role="treeitem"]', 'subfolder')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('[aria-label="Add path to create target"]')
       .click();
 

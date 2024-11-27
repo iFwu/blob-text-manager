@@ -16,7 +16,7 @@ describe('File and Folder Deletion Tests', () => {
   it('[DEL-01] should delete file in root directory', () => {
     // 选择根目录文件
     cy.contains('[role="treeitem"]', 'root-file.txt')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Delete file"]')
       .click();
 
@@ -44,7 +44,7 @@ describe('File and Folder Deletion Tests', () => {
 
     // 选择文件并删除
     cy.contains('[role="treeitem"]', 'nested.txt')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Delete file"]')
       .click();
 
@@ -69,7 +69,7 @@ describe('File and Folder Deletion Tests', () => {
   it('[DEL-03] should delete empty folder', () => {
     // 选择空文件夹
     cy.contains('[role="treeitem"]', 'empty-folder')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Delete folder"]')
       .click();
 
@@ -94,7 +94,7 @@ describe('File and Folder Deletion Tests', () => {
   it('[DEL-04] should delete non-empty folder with confirmation', () => {
     // 选择非空文件夹
     cy.contains('[role="treeitem"]', 'test-folder')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Delete folder"]')
       .click();
 
@@ -123,7 +123,7 @@ describe('File and Folder Deletion Tests', () => {
   it('[DEL-05] should not delete when cancelled', () => {
     // 选择文件
     cy.contains('[role="treeitem"]', 'root-file.txt')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Delete file"]')
       .click();
 

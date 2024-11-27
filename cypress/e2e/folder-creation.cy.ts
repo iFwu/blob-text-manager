@@ -85,7 +85,7 @@ describe('Folder Creation Tests', () => {
   it('[FOL-04] should create nested folder using current directory', () => {
     // 先点击 folder 设置当前目录 - 使用 ARIA 标签
     cy.contains('[role="presentation"]', 'folder')
-      .realHover()
+      .realHover({ position: 'right' })
       .find('button[aria-label="Add path to create target"]')
       .click();
 
