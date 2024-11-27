@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import type React from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { TreeDataItem } from '@/types';
+import type { TreeDataItem } from '@/types';
 
 interface TreeViewProps extends React.HTMLAttributes<HTMLDivElement> {
   data: TreeDataItem[];
@@ -81,8 +82,8 @@ export function TreeView({
 
   const renderTreeItem = (
     item: TreeDataItem,
-    level: number = 0,
-    isLastItem: boolean = false,
+    level = 0,
+    isLastItem = false,
     parentIsLast: boolean[] = []
   ) => {
     const isExpanded = expandedItemsRef.current.has(item.id);

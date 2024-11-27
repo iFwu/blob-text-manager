@@ -1,5 +1,5 @@
 import {
-  FormEvent,
+  type FormEvent,
   useState,
   useRef,
   useEffect,
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusIcon, FolderPlusIcon, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ValidateFileNameParams, ValidationResult } from '@/types';
+import type { ValidateFileNameParams, ValidationResult } from '@/types';
 import { toast } from '@/components/ui/use-toast';
 import { useAnimatedState } from '@/hooks/useAnimatedState';
 

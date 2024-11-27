@@ -11,7 +11,7 @@ import { OperationConfirmDialog } from '@/components/OperationConfirmDialog';
 import { useFileOperations } from '@/hooks/useFileOperations';
 import { toast } from '@/components/ui/use-toast';
 import { ZERO_WIDTH_SPACE } from '@/lib/const';
-import { BlobFile } from '@/types';
+import type { BlobFile } from '@/types';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { Button } from '../components/ui/button';
 

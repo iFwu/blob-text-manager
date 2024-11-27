@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Save, X, Check } from 'lucide-react';
 
-import { BlobFile } from '@/types';
+import type { BlobFile } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';

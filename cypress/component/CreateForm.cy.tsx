@@ -1,5 +1,5 @@
 import CreateForm from '@/components/CreateForm';
-import { ValidateFileNameParams, ValidationResult } from '@/types';
+import type { ValidateFileNameParams, ValidationResult } from '@/types';
 import { createAsyncStub } from '../support/utils';
 import { Toaster } from '@/components/ui/toaster';
 

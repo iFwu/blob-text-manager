@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { FolderIcon, FolderOpenIcon } from 'lucide-react';
-import { BlobFile, TreeDataItem } from '@/types';
+import type { BlobFile, TreeDataItem } from '@/types';
 
 interface UseFileTreeProps {
   files: BlobFile[];

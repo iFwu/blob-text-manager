@@ -6,7 +6,7 @@ import { FileIcon, FolderIcon } from 'lucide-react';
 import { TreeView } from '@/components/ui/tree-view';
 import { DirectoryAction, FileAction } from '@/components/ui/tree-actions';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import { BlobFile, TreeDataItem } from '@/types';
+import type { BlobFile, TreeDataItem } from '@/types';
 import { useFileTree } from '@/hooks/useFileTree';
 
 interface FileExplorerProps {

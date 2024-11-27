@@ -1,5 +1,5 @@
 import FileExplorer from '@/components/FileExplorer';
-import { BlobFile } from '@/types';
+import type { BlobFile } from '@/types';
 
 describe('FileExplorer', () => {
   const mockFiles: BlobFile[] = [

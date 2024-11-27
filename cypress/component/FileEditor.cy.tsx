@@ -1,5 +1,5 @@
 import FileEditor from '@/components/FileEditor';
-import { BlobFile } from '@/types';
+import type { BlobFile } from '@/types';
 import { Toaster } from '@/components/ui/toaster';
 import { createAsyncStub } from '../support/utils';
 
