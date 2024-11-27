@@ -122,9 +122,11 @@ describe('Subfolder File Creation Tests', () => {
     // 点击 folder 的按钮，设置当前目录
     // 使用 [role="presentation"] 来避免选择到子文件夹
     cy.contains('[role="presentation"]', 'folder')
+      .find('span')
       .realHover({ position: 'right' })
+      .parent()
       .find('button[aria-label="Add path to create target"]')
-      .click();
+      .click({ force: true });
 
     // 验证当前目录前缀显示正确
     cy.get('[aria-label="current directory"]').should((el) => {
