@@ -1,8 +1,10 @@
-import { mount } from 'cypress/react18';
+import '@cypress/code-coverage/support';
+import 'cypress-real-events';
 import './commands';
 
-// Augment the Cypress namespace to include type definitions for
-// your custom command.
+// Cypress component testing specific configuration
+import { mount } from 'cypress/react18';
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -12,6 +14,3 @@ declare global {
 }
 
 Cypress.Commands.add('mount', mount);
-
-// Example use:
-// cy.mount(<MyComponent />)

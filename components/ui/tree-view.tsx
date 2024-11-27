@@ -112,7 +112,7 @@ export function TreeView({
 
               return (
                 <div
-                  key={`indent-${item.id}-${level}`}
+                  key={`indent-${item.id}-${level}-${i}`}
                   className={cn('absolute w-px bg-border', 'left-[12px]')}
                   style={{
                     left: `${(i + 1) * INDENT_WIDTH - 1}px`,

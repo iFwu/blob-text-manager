@@ -6,6 +6,13 @@ export default defineConfig({
       framework: 'next',
       bundler: 'webpack',
     },
+    setupNodeEvents(on, config) {
+      require('@cypress/code-coverage/task')(on, config);
+      return config;
+    },
+    supportFile: 'cypress/support/component.tsx',
+    specPattern: '**/*.cy.{ts,tsx}',
+    indexHtmlFile: 'cypress/support/component-index.html',
   },
   e2e: {
     experimentalMemoryManagement: true,
@@ -15,5 +22,9 @@ export default defineConfig({
       NEXT_PUBLIC_IS_TEST: 'true',
     },
     experimentalRunAllSpecs: true,
+    setupNodeEvents(on, config) {
+      require('@cypress/code-coverage/task')(on, config);
+      return config;
+    },
   },
 });

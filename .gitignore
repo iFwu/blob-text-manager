@@ -43,5 +43,10 @@ cypress/videos/
 cypress/reports/
 cypress/downloads/
 cypress/fixtures/examples/
+cypress/results/
 .cypress-coverage/
 cypress.env.json
+
+# Coverage directories
+coverage/
+.nyc_output/

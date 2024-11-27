@@ -62,35 +62,46 @@ jobs:
       - name: Install Cypress binary
         run: pnpm exec cypress install
 
-      - name: Run Component Tests
-        env:
-          NODE_ENV: test
-        run: pnpm component:headless
-
-      - name: Build
+      - name: Run Coverage Tests
         env:
           NODE_ENV: test
           NEXT_PUBLIC_IS_TEST: 'true'
           NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN: 'vercel_blob_test_token'
-        run: pnpm build
+        run: pnpm coverage
 
-      - name: Run E2E Tests
-        env:
-          NODE_ENV: test
-          NEXT_PUBLIC_IS_TEST: 'true'
-          NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN: 'vercel_blob_test_token'
-        run: pnpm e2e:ci
+      - name: Upload Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
       - name: Upload Screenshots
-        uses: actions/upload-artifact@v3
         if: failure()
+        uses: actions/upload-artifact@v3
         with:
           name: cypress-screenshots
           path: cypress/screenshots
 
       - name: Upload Videos
-        uses: actions/upload-artifact@v3
         if: always()
+        uses: actions/upload-artifact@v3
         with:
           name: cypress-videos
           path: cypress/videos
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: cypress/results/
