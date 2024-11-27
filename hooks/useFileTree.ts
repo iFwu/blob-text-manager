@@ -15,14 +15,12 @@ function sortItems(items: TreeDataItem[]): TreeDataItem[] {
   const folders = items.filter((item) => Array.isArray(item.children));
   const files = items.filter((item) => !Array.isArray(item.children));
 
-  const sortByDate = (a: TreeDataItem, b: TreeDataItem) => {
-    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
-    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
-    return bTime - aTime;
+  const sortByName = (a: TreeDataItem, b: TreeDataItem) => {
+    return a.name.localeCompare(b.name);
   };
 
-  folders.sort(sortByDate);
-  files.sort(sortByDate);
+  folders.sort(sortByName);
+  files.sort(sortByName);
 
   return [...folders, ...files];
 }
