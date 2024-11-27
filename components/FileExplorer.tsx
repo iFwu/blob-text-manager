@@ -18,6 +18,14 @@ interface FileExplorerProps {
   selectedFile: BlobFile | null;
 }
 
+const NodeIcon = ({ className }: { className?: string }) => (
+  <FolderIcon className={className} />
+);
+
+const LeafIcon = ({ className }: { className?: string }) => (
+  <FileIcon className={className} />
+);
+
 export default function FileExplorer({
   files,
   onFileSelect,
@@ -91,8 +99,8 @@ export default function FileExplorer({
           data={treeData}
           selectedItemId={selectedFile?.pathname ?? null}
           onSelectChange={handleSelectChange}
-          defaultNodeIcon={FolderIcon}
-          defaultLeafIcon={FileIcon}
+          defaultNodeIcon={NodeIcon}
+          defaultLeafIcon={LeafIcon}
           className="group"
         />
       )}

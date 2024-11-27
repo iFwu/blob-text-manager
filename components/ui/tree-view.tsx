@@ -47,8 +47,9 @@ export function TreeView({
       const parts = itemId.split('/');
       let currentPath = '';
       for (let i = 0; i < parts.length - 1; i++) {
-        if (parts[i] === '') continue;
-        currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+        const part = parts[i];
+        if (!part) continue;
+        currentPath = currentPath === '' ? part : `${currentPath}/${part}`;
         newSet.add(currentPath);
       }
       return newSet;
