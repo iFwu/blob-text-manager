@@ -66,4 +66,33 @@ describe('Complex File Operations Tests', () => {
       'be.visible'
     );
   });
+
+  it('[CPX-02][bug] should change directory when selecting after setting prefix', () => {
+    // 展开文件夹
+    cy.get('[role="treeitem"][data-type="directory"]')
+      .contains('folder')
+      .click();
+
+    // 设置前缀
+    cy.contains('[role="treeitem"]', 'subfolder')
+      .realHover()
+      .find('[aria-label="Add path to create target"]')
+      .click();
+
+    // 验证前缀设置成功
+    cy.get('[aria-label="current directory"]').should((el) => {
+      expect(el.text().trim()).to.equal('folder/subfolder/');
+    });
+
+    // 选择文件
+    cy.get('[role="treeitem"][data-type="file"]').contains('test.txt').click();
+
+    // 验证编辑器标题
+    cy.contains('h2', 'Editing: folder/test.txt').should('be.visible');
+
+    // 验证当前目录前缀
+    cy.get('[aria-label="current directory"]').should((el) => {
+      expect(el.text().trim()).to.equal('folder/');
+    });
+  });
 });

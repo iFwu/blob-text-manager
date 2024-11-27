@@ -109,6 +109,9 @@ export default function Home() {
         return promise;
       }
 
+      if (file !== null) {
+        setTargetPath(undefined);
+      }
       handleFileSelect(file);
     },
     [
